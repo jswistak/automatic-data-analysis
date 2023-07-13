@@ -1,0 +1,4 @@
+.env
+__pycache__/
+latest_conversation_number.txt
+conversations/*

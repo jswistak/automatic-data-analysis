@@ -1,3 +1,4 @@
+import json
 import openai
 import os
 import contextlib
@@ -83,12 +84,25 @@ while "q" not in input("Press 'q' to quit or any other key to continue: "):
 
     print()
     print(conversation)
-    # r = get_response(conversation)
-    # print(extract_message_from_response(r))
-    # print(extract_code_snippets_from_response(r))
-    # conversation.append({"role": "system", "content": extract_message_from_response(r)})
 
-# r = get_response(conversation)
+# Save conversation
 
-# print(extract_message_from_response(r))
-# print(extract_code_snippets_from_response(r))
+print("Saving conversation...")
+
+# Retrieve the latest conversation number
+number_file_path = "latest_conversation_number.txt"
+try:
+    with open(number_file_path, "r") as number_file:
+        latest_conversation_number = int(number_file.read())
+except FileNotFoundError:
+    latest_conversation_number = 1
+
+conversation_path = f"conversations/conversation{latest_conversation_number:04d}.json"
+with open(conversation_path, "w") as f:
+    json.dump(conversation, f)
+
+latest_conversation_number += 1
+with open(number_file_path, "w") as number_file:
+    number_file.write(str(latest_conversation_number))
+
+print("Conversation saved to", conversation_path)
