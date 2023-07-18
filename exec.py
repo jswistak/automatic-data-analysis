@@ -1,6 +1,7 @@
 from io import StringIO
 from contextlib import redirect_stdout
 
+
 class CodeExecutor:
     # TODO: create real sandbox environment
     # TODO: support jupyter notebooks
@@ -17,4 +18,3 @@ class CodeExecutor:
             exec(code)
 
         return stdout_redirection.getvalue()
-
