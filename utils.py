@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Colors:
     BLACK = "\033[0;30m"
     RED = "\033[0;31m"
@@ -57,4 +58,3 @@ def print_assistant_message(assistant_message: str, code_snippets) -> None:
         code_snippets,
         f"{Colors.END}",
     )
-

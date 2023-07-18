@@ -1,7 +1,7 @@
 import contextlib
 import pandas as pd
 from io import StringIO
-from conversation import Conversation
+from conversation import Conversation, ConversationRoles
 from utils import Colors, load_csv_data, print_assistant_message, print_user_message
 
 
@@ -38,14 +38,15 @@ def main():
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"
     ):
         # Generate response
-        user_message_to_be_sent: dict = {"role": "user", "content": user_message}
         print_user_message(user_message)
-        assistant_message, code_snippets = bot.generate_response_with_snippets(user_message_to_be_sent)
+        assistant_message, code_snippets = bot.generate_response_with_snippets(
+            ConversationRoles.USER, user_message
+        )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)
         # conversation.append({"role": "assistant", "content": assistant_message})
         print_assistant_message(assistant_message, code_snippets)
-        
+
         if len(code_snippets) > 0:
             user_input: str = input(
                 f"{Colors.BOLD_BLACK}Do you want to execute code? (y/n): {Colors.END}"

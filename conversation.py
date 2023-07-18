@@ -5,6 +5,13 @@ from completion import (
 from utils import Colors
 
 
+class ConversationRoles:
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    FUNCTION = "function"
+
+
 class Conversation:
     @staticmethod
     def extract_message_from_response(response: dict) -> dict:
@@ -29,27 +36,33 @@ class Conversation:
     def _add_to_conversation(self, role, content):
         self.conversation.append({"role": role, "content": content})
 
-    def generate_response(self, conversation_message: dict = None) -> str:
-        if conversation_message is not None:
-            self._add_to_conversation(
-                role=conversation_message["role"],
-                content=conversation_message["content"],
-            )
+    def generate_response(
+        self, conversation_role: ConversationRoles = None, message_content: str = None
+    ) -> str:
+        if message_content is not None:
+            if conversation_role not in [
+                ConversationRoles.USER,
+                ConversationRoles.SYSTEM,
+            ]:
+                raise Exception(
+                    "Only user and system can add messages to the conversation"
+                )
+            self._add_to_conversation(conversation_role, message_content)
+
         self.last_response = get_response(self.conversation)
         message = Conversation.extract_message_from_response(self.last_response)
-        self._add_to_conversation(
-            role="assistant",
-            content=message,
-        )
+        self._add_to_conversation(ConversationRoles.ASSISTANT, message)
+
         return message
-    
-    def generate_response_with_snippets(self, conversation_message: dict = None) -> tuple[str, list[str]]:
-        message = self.generate_response(conversation_message)
+
+    def generate_response_with_snippets(
+        self, conversation_role: ConversationRoles, message_content: str = None
+    ) -> tuple[str, list[str]]:
+        message = self.generate_response(conversation_role, message_content)
         code_snippets: list[str] = Conversation.extract_code_snippets_from_message(
             message
         )
         return message, code_snippets
-
 
     def save_conversation_to_file(self) -> None:
         print("Saving conversation...")
