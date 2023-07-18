@@ -21,16 +21,6 @@ class Conversation:
         except Exception as e:
             raise Exception("No code snippets found in response") from e
 
-    @staticmethod
-    def extract_code_snippets_from_response(response: dict) -> list[str]:
-        try:
-            code_blocks = Conversation.extract_message_from_response(response).split(
-                "```"
-            )[1::2]
-            return code_blocks
-        except Exception as e:
-            raise Exception("No code snippets found in response") from e
-
     def __init__(self, conversation: list = None, python_code_executed: str = None):
         self.conversation = conversation
         self.python_code_executed = python_code_executed
