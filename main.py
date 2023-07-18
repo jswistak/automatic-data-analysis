@@ -1,13 +1,14 @@
 import contextlib
-import pandas as pd
-from io import StringIO
 from conversation import Conversation, ConversationRoles
 from utils import Colors, load_csv_data, print_assistant_message, print_user_message
+from exec import CodeExecutor
 
 
 def main():
     dataset_file_path = "data.csv"
     df = load_csv_data(dataset_file_path)
+
+    code_sandbox = CodeExecutor(env={"df": df})
 
     python_code_executed: str = (
         """pd.read_csv("data.csv", sep=",")\nprint(df.head())\n"""
@@ -62,34 +63,32 @@ def main():
         user_message: str = (
             f"I have found {len(code_snippets)} code snippets. Here is the output of:"
         )
-        output: StringIO = StringIO()
-        with contextlib.redirect_stdout(output):
-            for code in code_snippets:
-                if code.startswith("python"):
-                    code = code[6:]
-                    try:
-                        # TODO: run it in a sandbox environment
-                        python_code_executed += code + "\n"
-                        exec(code)
-                    except Exception as e:
-                        print(f"Error occurred while executing code: {e}")
-                user_message = (
-                    user_message
-                    + "\n"
-                    + code
-                    + "\n"
-                    + (
-                        output.getvalue()
-                        if output.getvalue()
-                        else (
-                            "Code has been executed without any errors! Unfortunately, there is no output for this code snippet. Please remember to print the output."
-                            if ".show" not in code
-                            else "While showing the plots it very helpful for me to understand the data. "
-                            "Please also remember that I'm unable to provide you with the plots. Can you then also print the required numerical description for me to present it to you?"
-                        )
+
+        for code in code_snippets:
+            retval = None
+            if code.startswith("python"):
+                code = code[6:]
+                try:
+                    bot.add_executed_code(code)
+                    retval = code_sandbox.execute_code(code)
+                except Exception as e:
+                    retval = f"Error occurred while executing code: {e}"
+            user_message = (
+                user_message
+                + "\n"
+                + code
+                + "\n"
+                + (
+                    retval
+                    if retval
+                    else (
+                        "Code has been executed without any errors! Unfortunately, there is no output for this code snippet. Please remember to print the output."
+                        if ".show" not in code
+                        else "While showing the plots it very helpful for me to understand the data. "
+                        "Please also remember that I'm unable to provide you with the plots. Can you then also print the required numerical description for me to present it to you?"
                     )
                 )
-                output.truncate(0)
+            )
 
         # TODO: summarize conversation
         # Summarize the conversation from time to time to keep it short

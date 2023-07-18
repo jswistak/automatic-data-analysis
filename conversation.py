@@ -36,6 +36,9 @@ class Conversation:
     def _add_to_conversation(self, role, content):
         self.conversation.append({"role": role, "content": content})
 
+    def add_executed_code(self, code: str) -> None:
+        self.python_code_executed += code + "\n"
+
     def generate_response(
         self, conversation_role: ConversationRoles = None, message_content: str = None
     ) -> str:
