@@ -39,9 +39,6 @@ class Conversation:
     def _add_to_conversation(self, role, content):
         self.conversation.append({"role": role, "content": content})
 
-    def save_conversation_to_file(self):
-        raise NotImplementedError
-
     def generate_response(self, conversation_message: dict = None) -> str:
         if conversation_message is not None:
             self._add_to_conversation(
