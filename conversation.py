@@ -47,7 +47,7 @@ class Conversation:
             )
             print(
                 f"{Colors.BOLD_GREEN}User message:{Colors.END}\n",
-                f"{Colors.BOLD_CYAN}",
+                f"{Colors.GREEN}",
                 conversation_message["content"],
                 f"{Colors.END}",
             )
