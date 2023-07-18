@@ -2,19 +2,12 @@ import contextlib
 import pandas as pd
 from io import StringIO
 from conversation import Conversation
-from utils import Colors
+from utils import Colors, load_csv_data, print_assistant_message, print_user_message
 
 
 def main():
     dataset_file_path = "data.csv"
-
-    df: pd.DataFrame = pd.read_csv(dataset_file_path, sep=",")
-    print(
-        f"{Colors.BOLD_YELLOW}Dataset '{dataset_file_path}' loaded into pandas. Head:{Colors.END}\n",
-        f"{Colors.YELLOW}",
-        df.head(),
-        f"{Colors.END}",
-    )
+    df = load_csv_data(dataset_file_path)
 
     python_code_executed: str = (
         """pd.read_csv("data.csv", sep=",")\nprint(df.head())\n"""
@@ -46,25 +39,13 @@ def main():
     ):
         # Generate response
         user_message_to_be_sent: dict = {"role": "user", "content": user_message}
-        assistant_message: str = bot.generate_response(user_message_to_be_sent)
+        print_user_message(user_message)
+        assistant_message, code_snippets = bot.generate_response_with_snippets(user_message_to_be_sent)
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)
         # conversation.append({"role": "assistant", "content": assistant_message})
-        print(
-            f"{Colors.BOLD_BLUE}Assistant message:{Colors.END}\n",
-            f"{Colors.CYAN}",
-            assistant_message,
-            f"{Colors.END}",
-        )
-        code_snippets: list[str] = Conversation.extract_code_snippets_from_message(
-            assistant_message
-        )
-        print(
-            f"{Colors.BOLD_RED}Assistant message code snippets:{Colors.END}\n",
-            f"{Colors.RED}",
-            code_snippets,
-            f"{Colors.END}",
-        )
+        print_assistant_message(assistant_message, code_snippets)
+        
         if len(code_snippets) > 0:
             user_input: str = input(
                 f"{Colors.BOLD_BLACK}Do you want to execute code? (y/n): {Colors.END}"

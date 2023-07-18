@@ -45,12 +45,6 @@ class Conversation:
                 role=conversation_message["role"],
                 content=conversation_message["content"],
             )
-            print(
-                f"{Colors.BOLD_GREEN}User message:{Colors.END}\n",
-                f"{Colors.GREEN}",
-                conversation_message["content"],
-                f"{Colors.END}",
-            )
         self.last_response = get_response(self.conversation)
         message = Conversation.extract_message_from_response(self.last_response)
         self._add_to_conversation(
@@ -58,6 +52,14 @@ class Conversation:
             content=message,
         )
         return message
+    
+    def generate_response_with_snippets(self, conversation_message: dict = None) -> tuple[str, list[str]]:
+        message = self.generate_response(conversation_message)
+        code_snippets: list[str] = Conversation.extract_code_snippets_from_message(
+            message
+        )
+        return message, code_snippets
+
 
     def save_conversation_to_file(self) -> None:
         print("Saving conversation...")
