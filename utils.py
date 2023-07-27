@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 class Colors:
     BLACK = "\033[0;30m"
     RED = "\033[0;31m"
@@ -20,3 +23,39 @@ class Colors:
 
     # Reset Color
     END = "\033[0m"
+
+
+def load_csv_data(data_path: str) -> pd.DataFrame:
+    df: pd.DataFrame = pd.read_csv(data_path, sep=",")
+    print(
+        f"{Colors.BOLD_YELLOW}Dataset '{data_path}' loaded into pandas. Head:{Colors.END}",
+        f"{Colors.YELLOW}\n",
+        df.head(),
+        f"{Colors.END}\n",
+    )
+    return df
+
+
+def print_user_message(user_message: str) -> None:
+    print(
+        f"{Colors.BOLD_GREEN}User message:{Colors.END}",
+        f"{Colors.GREEN}\n",
+        user_message,
+        f"{Colors.END}\n",
+    )
+
+
+def print_assistant_message(assistant_message: str, code_snippets) -> None:
+    print(
+        f"{Colors.BOLD_BLUE}Assistant message:{Colors.END}",
+        f"{Colors.CYAN}\n",
+        assistant_message,
+        f"{Colors.END}\n",
+    )
+    code_snippets = "\n\n".join(code_snippets)
+    print(
+        f"{Colors.BOLD_RED}Assistant message code snippets:{Colors.END}",
+        f"{Colors.RED}\n",
+        code_snippets if code_snippets else "No code snippets",
+        f"{Colors.END}\n",
+    )
