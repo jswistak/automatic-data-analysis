@@ -1,17 +1,33 @@
 import contextlib
 from conversation import Conversation, ConversationRoles
-from utils import Colors, load_csv_data, print_assistant_message, print_user_message
-from exec import CodeExecutor
-
+from utils import Colors, print_assistant_message, print_user_message
+from remote_python_shell_handler import RemotePythonShellHandler
 
 def main():
-    dataset_file_path = "data.csv"
-    df = load_csv_data(dataset_file_path)
+    # read content of .env file, containing run configuration
+    run_config = {}
+    with open(".env") as f:
+        for line in f:
+            key, value = line.strip().split("=")
+            run_config[key] = value
 
-    code_sandbox = CodeExecutor(env={"df": df})
+    python_runtime = RemotePythonShellHandler(
+        host=run_config["SSH_HOST"],
+        username=run_config["SSH_USERNAME"],
+        password=run_config["SSH_PASSWORD"],
+        port=run_config["SSH_PORT"],
+    )
+
+    dataset_file_name = run_config["DATASET_PATH"].split("/")[-1]
+    python_runtime.transfer_file(
+        run_config["DATASET_PATH"], dataset_file_name
+    )  # copying dataset file to remote server user's home directory
+
+    python_runtime.execute("import pandas as pd")
+    python_runtime.execute(f"df= pd.read_csv('{dataset_file_name}', sep=',')")
 
     python_code_executed: str = (
-        """pd.read_csv("data.csv", sep=",")\nprint(df.head())\n"""
+        """import pandas as pd\npd.read_csv("data.csv", sep=",")\n"""
     )
 
     # Setting initial conversation goals
@@ -32,8 +48,10 @@ def main():
     user_message: str = (
         "Here is a dataset I want you to analyze. "
         "It is a CSV file, loaded into pandas as a 'df' variable. Here is the output of the ```python\df.head()```\n"
-        f"{df.head()}"
+        f"{python_runtime.execute('df.head()')}"
     )
+
+    print("Data loaded into runtime environment.")
 
     while "q" not in input(
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"
@@ -70,7 +88,7 @@ def main():
                 code = code[6:]
                 try:
                     bot.add_executed_code(code)
-                    retval = code_sandbox.execute_code(code)
+                    retval = python_runtime.execute(code)
                 except Exception as e:
                     retval = f"Error occurred while executing code: {e}"
             user_message = (

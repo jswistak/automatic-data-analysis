@@ -10,4 +10,4 @@ services:
         SSH_PASSWORD: ${SSH_PASSWORD}
     image: python-execution-runtime
     ports:
-      - "8022:22"
+      - "${SSH_PORT}:22"
