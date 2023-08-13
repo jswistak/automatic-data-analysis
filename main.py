@@ -1,34 +1,28 @@
-import contextlib
+from dotenv import load_dotenv
+from os import getenv
 from conversation import Conversation, ConversationRoles
 from utils import Colors, print_assistant_message, print_user_message
 from remote_python_shell_handler import RemotePythonShellHandler
 
+
 def main():
-    # read content of .env file, containing run configuration
-    run_config = {}
-    with open(".env") as f:
-        for line in f:
-            key, value = line.strip().split("=")
-            run_config[key] = value
-
+    load_dotenv()
     python_runtime = RemotePythonShellHandler(
-        host=run_config["SSH_HOST"],
-        username=run_config["SSH_USERNAME"],
-        password=run_config["SSH_PASSWORD"],
-        port=run_config["SSH_PORT"],
+        host=getenv("SSH_HOST"),
+        username=getenv("SSH_USERNAME"),
+        password=getenv("SSH_PASSWORD"),
+        port=getenv("SSH_PORT"),
     )
 
-    dataset_file_name = run_config["DATASET_PATH"].split("/")[-1]
-    python_runtime.transfer_file(
-        run_config["DATASET_PATH"], dataset_file_name
-    )  # copying dataset file to remote server user's home directory
+    # region: Loading dataset into runtime environment
+    dataset_file_name = getenv("DATASET_PATH").split("/")[-1]
+    python_runtime.transfer_file(getenv("DATASET_PATH"), dataset_file_name)
 
-    python_runtime.execute("import pandas as pd")
-    python_runtime.execute(f"df= pd.read_csv('{dataset_file_name}', sep=',')")
-
-    python_code_executed: str = (
-        """import pandas as pd\npd.read_csv("data.csv", sep=",")\n"""
+    load_dataset_code = "\n".join(
+        ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
     )
+    python_runtime.execute(load_dataset_code)
+    # endregion
 
     # Setting initial conversation goals
     bot: Conversation = Conversation(
@@ -42,7 +36,7 @@ def main():
                 "and analysis steps, providing insights without explicit prompting.",
             },
         ],
-        python_code_executed=python_code_executed,
+        python_code_executed=load_dataset_code,
     )
 
     user_message: str = (
@@ -50,8 +44,6 @@ def main():
         "It is a CSV file, loaded into pandas as a 'df' variable. Here is the output of the ```python\df.head()```\n"
         f"{python_runtime.execute('df.head()')}"
     )
-
-    print("Data loaded into runtime environment.")
 
     while "q" not in input(
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"

@@ -1,7 +1,11 @@
 import pandas as pd
+from typing import List
 
 
 class Colors:
+    """Color codes for terminal output."""
+
+    # Regular Colors
     BLACK = "\033[0;30m"
     RED = "\033[0;31m"
     GREEN = "\033[0;32m"
@@ -25,18 +29,8 @@ class Colors:
     END = "\033[0m"
 
 
-def load_csv_data(data_path: str) -> pd.DataFrame:
-    df: pd.DataFrame = pd.read_csv(data_path, sep=",")
-    print(
-        f"{Colors.BOLD_YELLOW}Dataset '{data_path}' loaded into pandas. Head:{Colors.END}",
-        f"{Colors.YELLOW}\n",
-        df.head(),
-        f"{Colors.END}\n",
-    )
-    return df
-
-
 def print_user_message(user_message: str) -> None:
+    """Colorful formatting of user message."""
     print(
         f"{Colors.BOLD_GREEN}User message:{Colors.END}",
         f"{Colors.GREEN}\n",
@@ -45,7 +39,8 @@ def print_user_message(user_message: str) -> None:
     )
 
 
-def print_assistant_message(assistant_message: str, code_snippets) -> None:
+def print_assistant_message(assistant_message: str, code_snippets: List[str]) -> None:
+    """Colorful formatting of assistant message and code snippets."""
     print(
         f"{Colors.BOLD_BLUE}Assistant message:{Colors.END}",
         f"{Colors.CYAN}\n",

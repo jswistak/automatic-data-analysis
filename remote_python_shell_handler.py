@@ -38,6 +38,7 @@ class RemotePythonShellHandler:
         Returns:
             A tuple containing the stdin, stdout and stderr or a string containing the mixed stdout and stderr.
         """
+        # TODO: handle plotting
 
         command = command.strip("\n")
         self.shell.send(command + "\n")

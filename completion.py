@@ -1,13 +1,11 @@
 import openai
-import os
-from dotenv import load_dotenv
+from os import getenv
 
-load_dotenv()
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = getenv("OPENAI_API_KEY")
 
 
 def get_response(messages: list[dict]) -> dict:
+    """Get completion from OpenAI GPT-3 API."""
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages,
