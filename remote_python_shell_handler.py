@@ -21,7 +21,7 @@ class RemotePythonShellHandler:
     def __del__(self):
         self.ssh.close()
 
-    def execute(
+    def _execute_command(
         self, command: str, simplify_output: bool = True
     ) -> Union[Tuple[str, str, str], str]:
         """
@@ -77,6 +77,39 @@ class RemotePythonShellHandler:
         stdout = "\n".join(stdout).strip("\n")
         stderr = "\n".join(stderr).strip("\n")
         return command, stdout, stderr
+    
+    def execute(self, commands: Union[list[str], str], simplify_output: bool = True) -> Union[Tuple[str, str, str], str]:
+        """
+        Execute the given command (can be multiple lines) in the remote shell.
+
+        Parameters:
+            commands: The commands to execute.
+            simplify_output: Whether to simplify the output (return mixed stdout and stderr) or not (separate stdin, stdout and stderr).
+
+        Examples:
+            execute(["ls -l", "cd /home/user"])
+            execute("ls -l\ncd /home/user")
+
+        Returns:
+            A tuple containing the stdin, stdout and stderr or a string containing the mixed stdout and stderr.
+        """
+
+        if isinstance(commands, str):
+            commands = commands.split("\n")
+
+        if simplify_output:
+            output = ""
+            for c in commands:
+                output += self._execute_command(c, simplify_output=True)
+            return output
+        
+        stdout = []
+        stderr = []
+        for c in commands:
+            command, stdout_part, stderr_part = self._execute_command(c, simplify_output=False)
+            stdout.append(stdout_part)
+            stderr.append(stderr_part)
+        return "\n".join(stdout), "\n".join(stderr)
 
     def transfer_file(self, src_file_path: str, dest_file_path: str) -> None:
         """
