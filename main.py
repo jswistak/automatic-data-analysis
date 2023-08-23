@@ -1,8 +1,10 @@
 from dotenv import load_dotenv
 from os import getenv
-from conversation import Conversation, ConversationRoles
+from conversation import Conversation
+from completion import ConversationRoles
 from utils import Colors, print_assistant_message, print_user_message
 from remote_python_shell_handler import RemotePythonShellHandler
+from prompts import INITIAL_PROMPT, PROMPT_SUFFIX
 
 
 def main():
@@ -28,12 +30,8 @@ def main():
     bot: Conversation = Conversation(
         conversation=[
             {
-                "role": "system",
-                "content": "In this interaction, the AI assistant will proactively take actions by generating a code to be run on "
-                "a CSV dataset loaded into pandas and available under variable 'df', perform data cleaning using Python programming language, "
-                "conduct exploratory data analysis (EDA), and make inferences based "
-                "on the analysis. The AI assistant will guide the user through the data processing by providing code snippets "
-                "and analysis steps, providing insights without explicit prompting.",
+                "role": ConversationRoles.SYSTEM,
+                "content": INITIAL_PROMPT,
             },
         ],
         python_code_executed=load_dataset_code,
@@ -51,19 +49,23 @@ def main():
         # Generate response
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
-            ConversationRoles.USER, user_message
+            ConversationRoles.USER, user_message, system_message_suffix=PROMPT_SUFFIX
         )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)
         # conversation.append({"role": "assistant", "content": assistant_message})
         print_assistant_message(assistant_message, code_snippets)
 
-        if len(code_snippets) > 0:
-            user_input: str = input(
-                f"{Colors.BOLD_BLACK}Do you want to execute code? (y/n): {Colors.END}"
-            )
-            if user_input.lower()[0] != "y":
-                break
+        """ 
+        Since the code will be executed in the virtual environment,
+        we will NOT ask for a confirmation to execute the code.
+        """
+        # if len(code_snippets) > 0:
+        #     user_input: str = input(
+        #         f"{Colors.BOLD_BLACK}Do you want to execute code? (y/n): {Colors.END}"
+        #     )
+        #     if user_input.lower()[0] != "y":
+        #         break
 
         # Execute code
         if len(code_snippets) == 0:

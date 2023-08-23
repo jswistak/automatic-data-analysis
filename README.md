@@ -5,6 +5,7 @@
 ## Prerequisites
 
 Whole solution (both app and execution runtime) relies on configuration file. It should be named `.env` and placed in the root directory. Its content should be as follows:
+
 ```
 DATASET_PATH=<path to dataset>
 SSH_HOST=<hostname, for local development 127.0.0.1>
