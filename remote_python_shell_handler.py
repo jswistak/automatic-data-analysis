@@ -77,8 +77,10 @@ class RemotePythonShellHandler:
         stdout = "\n".join(stdout).strip("\n")
         stderr = "\n".join(stderr).strip("\n")
         return command, stdout, stderr
-    
-    def execute(self, commands: Union[list[str], str], simplify_output: bool = True) -> Union[Tuple[str, str, str], str]:
+
+    def execute(
+        self, commands: Union[list[str], str], simplify_output: bool = True
+    ) -> Union[Tuple[str, str, str], str]:
         """
         Execute the given command (can be multiple lines) in the remote shell.
 
@@ -102,11 +104,13 @@ class RemotePythonShellHandler:
             for c in commands:
                 output += self._execute_command(c, simplify_output=True)
             return output
-        
+
         stdout = []
         stderr = []
         for c in commands:
-            command, stdout_part, stderr_part = self._execute_command(c, simplify_output=False)
+            command, stdout_part, stderr_part = self._execute_command(
+                c, simplify_output=False
+            )
             stdout.append(stdout_part)
             stderr.append(stderr_part)
         return "\n".join(stdout), "\n".join(stderr)
