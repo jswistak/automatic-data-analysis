@@ -11,3 +11,5 @@ services:
     image: python-execution-runtime
     ports:
       - "${SSH_PORT}:22"
+    volumes:
+     - ./conversations/images:/home/${SSH_USERNAME}
