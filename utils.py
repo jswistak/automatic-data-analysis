@@ -54,3 +54,12 @@ def print_assistant_message(assistant_message: str, code_snippets: List[str]) ->
         code_snippets if code_snippets else "No code snippets",
         f"{Colors.END}\n",
     )
+
+def print_message_suffx(message_suffix: str) -> None:
+    """Colorful formatting of message suffix."""
+    print(
+        f"{Colors.BOLD_YELLOW}Message suffix:{Colors.END}",
+        f"{Colors.YELLOW}\n",
+        message_suffix,
+        f"{Colors.END}\n",
+    )

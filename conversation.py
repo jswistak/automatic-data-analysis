@@ -51,8 +51,19 @@ class Conversation:
                 )
             self._add_to_conversation(conversation_role, message_content)
 
-        self.last_response = get_response(self.conversation, system_message_suffix)
+        # Add system message suffix to the local copy of the messages
+        conversation = self.conversation
+        if system_message_suffix is not None and len(conversation) > 2:
+            conversation[-1:-1] = [
+                {
+                    "role": ConversationRoles.SYSTEM,
+                    "content": system_message_suffix,
+                }
+            ]
+
+        self.last_response = get_response(conversation)
         message = Conversation.extract_message_from_response(self.last_response)
+        # Message suffix is not kept in the conversation history
         self._add_to_conversation(ConversationRoles.ASSISTANT, message)
 
         return message
