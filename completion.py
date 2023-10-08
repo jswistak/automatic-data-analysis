@@ -15,22 +15,12 @@ class ConversationRoles:
 # print("OpenAI API key has been set")
 
 
-def get_response(messages: list[dict], system_message_suffix: str = None) -> dict:
+def get_response(messages: list[dict]) -> dict:
     """Get completion from OpenAI GPT-3 API."""
     openai.api_key = getenv("OPENAI_API_KEY")
 
-    # Add system message suffix to the local copy of the messages
-    messages_local = messages.copy()
-    if system_message_suffix is not None and len(messages_local) > 2:
-        messages_local[-1:-1] = [
-            {
-                "role": ConversationRoles.SYSTEM,
-                "content": system_message_suffix,
-            }
-        ]
-    print(messages_local)
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=messages_local,
+        messages=messages,
     )
     return response
