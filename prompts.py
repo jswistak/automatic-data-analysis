@@ -12,4 +12,4 @@ Rules you must follow:
 - Each plot or graph you generate have to be saved to a file instead of being displayed on the screen. Do not use `plt.show()` or `display()` functions.
 
 """
-PROMPT_SUFFIX = """Always generate a new chunk Python code for each step of the analysis. Remember to follow your rules. Remember to generate code snipped and the goal of the analysis."""
+USER_PROMPT_PREFIX = """Always generate a new chunk Python code for each step of the analysis. Remember to follow your rules. Remember to generate code snipped and the goal of the analysis."""

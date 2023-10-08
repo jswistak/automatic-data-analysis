@@ -54,3 +54,13 @@ def print_assistant_message(assistant_message: str, code_snippets: List[str]) ->
         code_snippets if code_snippets else "No code snippets",
         f"{Colors.END}\n",
     )
+
+
+def print_message_prefix(message_prefix: str) -> None:
+    """Colorful formatting of user's message prefix."""
+    print(
+        f"{Colors.BOLD_YELLOW}User's message prefix (added before last user's message as system's message, not persisted in conversation):{Colors.END}",
+        f"{Colors.YELLOW}\n",
+        message_prefix,
+        f"{Colors.END}\n",
+    )
