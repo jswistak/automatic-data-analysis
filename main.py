@@ -43,11 +43,12 @@ def main():
         f"{python_runtime.execute('df.head()')}"
     )
 
+    print_message_prefix(USER_PROMPT_PREFIX)
+
     while "q" not in input(
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"
     ):
         # Generate response
-        print_message_prefix(USER_PROMPT_PREFIX)
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
             ConversationRoles.USER, user_message, system_message_prefix=USER_PROMPT_PREFIX
