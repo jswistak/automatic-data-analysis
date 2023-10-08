@@ -8,10 +8,13 @@ Whole solution (both app and execution runtime) relies on configuration file. It
 
 ```
 DATASET_PATH=<path to dataset>
-SSH_HOST=<hostname, for local development 127.0.0.1>
-SSH_PORT=<port>
+SSH_HOST=<ssh_hostname, for local development 127.0.0.1>
+SSH_PORT=<ssh_port>
 SSH_USERNAME=<username>
 SSH_PASSWORD=<password>
+JUPYTER_HOST=<jupyter_hostname, for local development 127.0.0.1>
+JUPYTER_PORT=<jupyter_port>
+JUPYTER_NOTEBOOKS_PATH=<path to notebooks directory>
 ```
 
 ## How to run
@@ -23,6 +26,16 @@ SSH_PASSWORD=<password>
 
 ## Execution runtime
 
+### Python container
+
 Execution runtime is a Debian based docker container with Python 3.10 and ssh server (for remote code execution).
-On the first execution, to create image run `docker compose build`.
-Then run `docker compose up` to start the container. It will be available on port 8022 (ssh -p 8022 <username>@localhost).
+On the first execution, to create image run `docker compose -f python-runtime.docker-compose.yml build`.
+Then run `docker compose -f python-runtime.docker-compose.yml up` to start the container. It will be available on port <ssh_port> (ssh -p <ssh_port> <username>@<ssh_hostname>).
+
+### Jupyter notebook container
+
+Jupyter notebook container is an official Jupyter docker image [jupyter/datascience-notebook](https://hub.docker.com/r/jupyter/datascience-notebook) with python 3.10 kernel installed.
+You simply run `docker compose -f jupyter-notebook.docker-compose.yml up` to start the container. It will be available on port <jupyter_port> (http://<jupyter_hostname>:<jupyter_port>).
+Note: Notebooks will be saved in the directory specified in the configuration file.
+
+
