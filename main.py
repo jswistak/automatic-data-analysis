@@ -2,9 +2,9 @@ from dotenv import load_dotenv
 from os import getenv
 from conversation import Conversation
 from completion import ConversationRoles
-from utils import Colors, print_assistant_message, print_user_message, print_message_suffx
+from utils import Colors, print_assistant_message, print_user_message, print_message_prefix
 from remote_python_shell_handler import RemotePythonShellHandler
-from prompts import INITIAL_PROMPT, PROMPT_SUFFIX
+from prompts import INITIAL_PROMPT, USER_PROMPT_PREFIX
 
 
 def main():
@@ -47,10 +47,10 @@ def main():
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"
     ):
         # Generate response
-        print_message_suffx(PROMPT_SUFFIX)
+        print_message_prefix(USER_PROMPT_PREFIX)
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
-            ConversationRoles.USER, user_message, system_message_suffix=PROMPT_SUFFIX
+            ConversationRoles.USER, user_message, system_message_prefix=USER_PROMPT_PREFIX
         )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)

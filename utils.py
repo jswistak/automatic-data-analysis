@@ -55,11 +55,12 @@ def print_assistant_message(assistant_message: str, code_snippets: List[str]) ->
         f"{Colors.END}\n",
     )
 
-def print_message_suffx(message_suffix: str) -> None:
-    """Colorful formatting of message suffix."""
+
+def print_message_prefix(message_prefix: str) -> None:
+    """Colorful formatting of user's message prefix."""
     print(
-        f"{Colors.BOLD_YELLOW}Message suffix:{Colors.END}",
+        f"{Colors.BOLD_YELLOW}User's message prefix (added before last user's message as system's message, not persisted in conversation):{Colors.END}",
         f"{Colors.YELLOW}\n",
-        message_suffix,
+        message_prefix,
         f"{Colors.END}\n",
     )
