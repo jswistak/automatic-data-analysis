@@ -167,3 +167,6 @@ data.csv
 /conversations/*
 !/conversations/images/
 /conversations/images/*
+
+# Office 365 temp files
+~$*
