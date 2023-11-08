@@ -1,9 +1,0 @@
-version: "3.8"
-
-services:
-  execution-runtime:
-    image: jupyter/scipy-notebook:python-3.10
-    ports:
-      - "${JUPYTER_PORT}:8888"
-    volumes:
-      - ./notebooks:/home/jovyan/work
