@@ -28,7 +28,7 @@ def get_response(messages: list[dict], system_message_suffix: str = None) -> dic
                 "content": system_message_suffix,
             }
         ]
-    print(messages_local)
+    # print(messages_local)
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages_local,
