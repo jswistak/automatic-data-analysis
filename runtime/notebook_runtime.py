@@ -84,12 +84,13 @@ class NotebookRuntime:
         with open(output_path, "wb") as f:
             f.write(body)
 
-    def upload_data_file(self, local_path: str) -> None:
+    def upload_file(self, local_path: str, dest_file_path: str) -> None:
         """
         Uploads the data files to the Jupyter Server (for kernel access).
 
         Parameters:
             local_path: The path to the dataset on the local machine.
+            
         """
 
         assert os.path.exists(local_path), "Dataset file does not exist"
