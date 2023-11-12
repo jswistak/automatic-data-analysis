@@ -2,28 +2,76 @@ from dotenv import load_dotenv
 from os import getenv
 from conversation import Conversation
 from completion import ConversationRoles
-from utils import Colors, print_assistant_message, print_user_message, print_message_prefix
-from remote_python_shell_handler import RemotePythonShellHandler
+from utils import (
+    Colors,
+    print_assistant_message,
+    print_user_message,
+    print_message_prefix,
+)
+from runtime.ssh_python_runtime import SSHPythonRuntime
+from runtime.notebook_runtime import NotebookRuntime
 from prompts import INITIAL_PROMPT, USER_PROMPT_PREFIX
+from datetime import datetime
+import argparse
+
+# TODO: Rewrite the cell in case of error
 
 
 def main():
-    load_dotenv()
-    python_runtime = RemotePythonShellHandler(
-        host=getenv("SSH_HOST"),
-        username=getenv("SSH_USERNAME"),
-        password=getenv("SSH_PASSWORD"),
-        port=getenv("SSH_PORT"),
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dataset", type=str)
+    parser.add_argument(
+        "-runtime",
+        type=str,
+        default="jupyter-notebook",
+        choices=["python-ssh", "jupyter-notebook", "apache-zeppelin"],
     )
+
+    load_dotenv()
+    args = parser.parse_args()  # Arguments have precedence over environment variables
+
+    if args.dataset:
+        dataset_path = args.dataset
+    else:
+        dataset_path = getenv("DATASET_PATH")
+    if not dataset_path:
+        raise ValueError("Dataset path is required but not provided")
+
+    if args.runtime:
+        runtime_type = args.runtime
+    else:
+        runtime_type = getenv("RUNTIME_TYPE")
+    if not runtime_type:
+        raise ValueError("Runtime type is required but not provided")
+
+    match runtime_type:
+        case "python-ssh":
+            runtime = SSHPythonRuntime(
+                host=getenv("SSH_HOST"),
+                port=getenv("SSH_PORT"),
+                username=getenv("SSH_USERNAME"),
+                password=getenv("SSH_PASSWORD"),
+            )
+        case "jupyter-notebook":
+            runtime = NotebookRuntime(
+                host=getenv("JUPYTER_HOST"),
+                port=getenv("JUPYTER_PORT"),
+                token=getenv("JUPYTER_TOKEN"),
+            )
+        case "apache-zeppelin":
+            raise NotImplementedError("Apache Zeppelin is not supported yet")
+        case _:
+            raise ValueError(f"Runtime type {runtime_type} is not supported")
 
     # region: Loading dataset into runtime environment
     dataset_file_name = getenv("DATASET_PATH").split("/")[-1]
-    python_runtime.transfer_file(getenv("DATASET_PATH"), dataset_file_name)
+    runtime.upload_file(getenv("DATASET_PATH"), dataset_file_name)
 
     load_dataset_code = "\n".join(
         ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
     )
-    python_runtime.execute(load_dataset_code)
+    cell_idx = runtime.add_code(load_dataset_code)
+    runtime.execute_cell(cell_idx)
     # endregion
 
     # Setting initial conversation goals
@@ -37,10 +85,12 @@ def main():
         python_code_executed=load_dataset_code,
     )
 
+    cell_idx = runtime.add_code("df.head()")
+    runtime.execute_cell(cell_idx)
     user_message: str = (
         "Here is a dataset I want you to analyze. "
-        "It is a CSV file, loaded into pandas as a 'df' variable. Here is the output of the ```python\df.head()```\n"
-        f"{python_runtime.execute('df.head()')}"
+        "It is a CSV file, loaded into pandas as a 'df' variable. Here is the output of the ```python\ndf.head()```\n"
+        f"{runtime.get_cell_output_stream(cell_idx)}"
     )
 
     print_message_prefix(USER_PROMPT_PREFIX)
@@ -51,7 +101,9 @@ def main():
         # Generate response
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
-            ConversationRoles.USER, user_message, system_message_prefix=USER_PROMPT_PREFIX
+            ConversationRoles.USER,
+            user_message,
+            system_message_prefix=USER_PROMPT_PREFIX,
         )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)
@@ -82,24 +134,24 @@ def main():
             retval = None
             if code.startswith("python"):
                 code = code[6:]
-                try:
-                    bot.add_executed_code(code)
-                    retval = python_runtime.execute(code)
-                except Exception as e:
-                    retval = f"Error occurred while executing code: {e}"
+                cell_idx = runtime.add_code(code)
+                runtime.execute_cell(cell_idx)
+                retval = runtime.get_cell_output_stream(cell_idx)
+                plot_in_output = runtime.check_if_plot_in_output(cell_idx)
+                executed_code = runtime.get_content(cell_idx)
+                bot.add_executed_code(executed_code)
             user_message = (
                 user_message
                 + "\n"
-                + code
+                + executed_code
                 + "\n"
                 + (
                     retval
                     if retval
                     else (
-                        "Code has been executed without any errors! Unfortunately, there is no output for this code snippet. Please remember to print the output."
-                        if ".show" not in code
-                        else "While showing the plots it very helpful for me to understand the data. "
-                        "Please also remember that I'm unable to provide you with the plots. Can you then also print the required numerical description for me to present it to you?"
+                        "Code has been executed! Plot was generated"
+                        if plot_in_output
+                        else "Code has been executed! Unfortunately, there is no output for this code snippet. Please remember to print the output. But don't repeat already executed code."
                     )
                 )
             )
@@ -111,6 +163,10 @@ def main():
 
     # Save conversation
     bot.save_conversation_to_file()
+    report_path = runtime.generate_report(
+        "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    )
+    print(f"Report has been saved to {report_path}")
 
 
 if __name__ == "__main__":
