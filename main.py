@@ -138,10 +138,9 @@ def main():
                     retval
                     if retval
                     else (
-                        "Code has been executed! Unfortunately, there is no output for this code snippet. Please remember to print the output."
-                        if not plot_in_output
-                        else "While showing the plots it very helpful for me to understand the data. "
-                        "Please also remember that I'm unable to provide you with the plots. Can you then also print the required numerical description for me to present it to you?"
+                        "Code has been executed! Plot was generated"
+                        if plot_in_output
+                        else "Code has been executed! Unfortunately, there is no output for this code snippet. Please remember to print the output. But don't repeat already executed code."
                     )
                 )
             )
