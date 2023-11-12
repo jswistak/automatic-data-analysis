@@ -9,6 +9,7 @@ from datetime import datetime
 
 # TODO: Rewrite the cell in case of error
 
+
 def main():
     load_dotenv()
     runtime = SSHPythonRuntime(
@@ -115,7 +116,9 @@ def main():
 
     # Save conversation
     bot.save_conversation_to_file()
-    report_path = runtime.generate_report("reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+    report_path = runtime.generate_report(
+        "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    )
     print(f"Report has been saved to {report_path}")
 
 

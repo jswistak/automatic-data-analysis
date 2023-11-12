@@ -3,6 +3,8 @@ from typing import Union, Tuple, List
 import re
 import uuid
 from runtime.iruntime import IRuntime
+
+
 class _SSHPythonRuntimeCell:
     __slots__ = ["content", "type", "output", "plots"]
 
@@ -27,11 +29,13 @@ class SSHPythonRuntime(IRuntime):
     ):
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._ssh.connect(hostname=host, username=username, password=password, port=port)
+        self._ssh.connect(
+            hostname=host, username=username, password=password, port=port
+        )
 
         self._shell = self._ssh.invoke_shell()
         self._execute_command("python")
-        self._execute_command("import os") # Used for plots saving confirmation
+        self._execute_command("import os")  # Used for plots saving confirmation
 
         self._cells: list[_SSHPythonRuntimeCell] = []
 
@@ -55,10 +59,10 @@ class SSHPythonRuntime(IRuntime):
         self._cells.append(_SSHPythonRuntimeCell(code, "code"))
         return len(self._cells) - 1
 
-    def remove_cell(self, cell_index: int) -> None:
+    def remove_cell(self, cell_index: int = -1) -> None:
         del self._cells[cell_index]
 
-    def execute_cell(self, cell_index: int) -> None:
+    def execute_cell(self, cell_index: int = -1) -> None:
         cell = self._cells[cell_index]
         if cell.type != "code":
             return
@@ -77,17 +81,17 @@ class SSHPythonRuntime(IRuntime):
         self._cells[cell_index].output = output.strip()
         self._cells[cell_index].plots = out_plots
 
-    def get_content(self, cell_index: int) -> str:
+    def get_content(self, cell_index: int = -1) -> str:
         return self._cells[cell_index].content
 
-    def get_cell_output(self, cell_index: int) -> Union[str, None]:
+    def get_cell_output(self, cell_index: int = -1) -> Union[str, None]:
         cell = self._cells[cell_index]
         if cell.type != "code":
             return None
 
         return cell.output
-    
-    def check_if_plot_in_output(self, cell_index: int) -> bool:
+
+    def check_if_plot_in_output(self, cell_index: int = -1) -> bool:
         return self._cells[cell_index].plots != []
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:

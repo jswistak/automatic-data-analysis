@@ -34,14 +34,14 @@ class IRuntime(ABC):
         pass
 
     @abstractmethod
-    def remove_cell(self, cell_index: int) -> None:
+    def remove_cell(self, cell_index: int = -1) -> None:
         """
         Removes the cell with the given index.
         """
         pass
 
     @abstractmethod
-    def execute_cell(self, cell_index: int) -> None:
+    def execute_cell(self, cell_index: int = -1) -> None:
         """
         Executes a cell with the given index, if it is a code cell. Otherwise, does nothing.
         Errors are also written to the output.
@@ -49,21 +49,21 @@ class IRuntime(ABC):
         pass
 
     @abstractmethod
-    def get_content(self, cell_index: int) -> str:
+    def get_content(self, cell_index: int = -1) -> str:
         """
         Returns the content of the cell with the given index.
         """
         pass
 
     @abstractmethod
-    def get_cell_output(self, cell_index: int) -> Union[str, None]:
+    def get_cell_output(self, cell_index: int = -1) -> Union[str, None]:
         """
         Returns the output of the cell with the given index, if it is a code cell. Otherwise, returns None.
         """
         pass
 
     @abstractmethod
-    def check_if_plot_in_output(self, cell_index: int) -> bool:
+    def check_if_plot_in_output(self, cell_index: int = -1) -> bool:
         """
         Returns true if the output of the cell with the given index contains a plot.
         """
