@@ -56,9 +56,9 @@ class IRuntime(ABC):
         pass
 
     @abstractmethod
-    def get_cell_output(self, cell_index: int = -1) -> Union[str, None]:
+    def get_cell_output_stream(self, cell_index: int = -1) -> Union[str, None]:
         """
-        Returns the output of the cell with the given index, if it is a code cell. Otherwise, returns None.
+        Returns the output (only stdout and stderr, no media) of the cell with the given index, if it is a code cell. Otherwise, returns None.
         """
         pass
 

@@ -46,7 +46,7 @@ def main():
     user_message: str = (
         "Here is a dataset I want you to analyze. "
         "It is a CSV file, loaded into pandas as a 'df' variable. Here is the output of the ```python\df.head()```\n"
-        f"{runtime.get_cell_output(cell_idx)}"
+        f"{runtime.get_cell_output_stream(cell_idx)}"
     )
 
     while "q" not in input(
@@ -88,7 +88,7 @@ def main():
                 code = code[6:]
                 cell_idx = runtime.add_code(code)
                 runtime.execute_cell(cell_idx)
-                retval = runtime.get_cell_output(cell_idx)
+                retval = runtime.get_cell_output_stream(cell_idx)
                 plot_in_output = runtime.check_if_plot_in_output(cell_idx)
                 executed_code = runtime.get_content(cell_idx)
                 bot.add_executed_code(executed_code)

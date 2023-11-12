@@ -84,7 +84,7 @@ class SSHPythonRuntime(IRuntime):
     def get_content(self, cell_index: int = -1) -> str:
         return self._cells[cell_index].content
 
-    def get_cell_output(self, cell_index: int = -1) -> Union[str, None]:
+    def get_cell_output_stream(self, cell_index: int = -1) -> Union[str, None]:
         cell = self._cells[cell_index]
         if cell.type != "code":
             return None
