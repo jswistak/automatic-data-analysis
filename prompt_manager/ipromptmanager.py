@@ -3,13 +3,6 @@ from typing import List, Tuple, Dict, Union
 from enum import Enum
 
 
-class IPrompt(ABC):
-    """
-    Interface for Prompt Manager
-    It takes a current conversation and generates specific conversation with a specific system prompt for an given Agent (Code Generation or Analysis Suggestion and Interpretation).
-    """
-
-
 class AgentType(Enum):
     CODE_GENERATION = 1
     ANALYSIS_SUGGESTION_INTERPRETATION = 2
@@ -20,7 +13,7 @@ class LLMType(Enum):
     LLAMA2 = 2
 
 
-class IPrompt(ABC):
+class IPromptManager(ABC):
     """
     Interface for a Prompt Manager.
     It generates specific prompts for a given Agent (Code Generation or Analysis Suggestion and Interpretation) based on the current conversation and the LLM type.

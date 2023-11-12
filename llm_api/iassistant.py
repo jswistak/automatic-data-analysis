@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Union
 
 
-class ILLM(ABC):
+class IAssistant(ABC):
     """
     Interface for a Large Language Model (LLM).
     It processes conversation contexts to generate response.
