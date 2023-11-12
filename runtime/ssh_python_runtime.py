@@ -1,15 +1,16 @@
 import paramiko
-from typing import Union
+from typing import Union, Tuple, List
+import re
+import uuid
 from runtime.iruntime import IRuntime
-
-
 class _SSHPythonRuntimeCell:
-    __slots__ = ["content", "type", "output"]
+    __slots__ = ["content", "type", "output", "plots"]
 
     def __init__(self, content: str, type: str):
         self.content = content
         self.type = type
         self.output = None
+        self.plots = []
 
 
 class SSHPythonRuntime(IRuntime):
@@ -18,6 +19,8 @@ class SSHPythonRuntime(IRuntime):
 
     Report is generated as a markdown file with the code snippets and their outputs.
     """
+
+    _saveplot__path_regex = r"(?<=\.savefig\([\'\"]).+(?=[\'\"]\))"
 
     def __init__(
         self, username: str, password: str, host: str = "127.0.0.1", port: int = 22
@@ -28,6 +31,7 @@ class SSHPythonRuntime(IRuntime):
 
         self.shell = self.ssh.invoke_shell()
         self._execute_command("python")
+        self._execute_command("import os") # Used for plots saving confirmation
 
         self.cells: list[_SSHPythonRuntimeCell] = []
 
@@ -40,6 +44,14 @@ class SSHPythonRuntime(IRuntime):
         return len(self.cells) - 1
 
     def add_code(self, code: str) -> int:
+        # Replace complex path to simple one
+        matches = re.findall(self._saveplot__path_regex, code)
+        for match in matches:
+            code = code.replace(match, match.split("/")[-1])
+
+        if ".show()" in code:
+            code = code.replace(".show()", f".savefig('{uuid.uuid4()}.png')")
+
         self.cells.append(_SSHPythonRuntimeCell(code, "code"))
         return len(self.cells) - 1
 
@@ -53,12 +65,20 @@ class SSHPythonRuntime(IRuntime):
 
         commands = cell.content.split("\n")
         output = ""
+        out_plots = []
         for c in commands:
-            retval = self._execute_command(c).strip()
-            if retval != "":
-                output += retval + "\n"
+            stream, plots = self._execute_command(c)
+            stream = stream.strip()
+            if stream != "":
+                output += stream + "\n"
+            if plots != []:
+                out_plots += plots
 
         self.cells[cell_index].output = output.strip()
+        self.cells[cell_index].plots = out_plots
+
+    def get_content(self, cell_index: int) -> str:
+        return self.cells[cell_index].content
 
     def get_cell_output(self, cell_index: int) -> Union[str, None]:
         cell = self.cells[cell_index]
@@ -66,6 +86,9 @@ class SSHPythonRuntime(IRuntime):
             return None
 
         return cell.output
+    
+    def check_if_plot_in_output(self, cell_index: int) -> bool:
+        return self.cells[cell_index].plots != []
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
         sftp_client = self.ssh.open_sftp()
@@ -79,9 +102,12 @@ class SSHPythonRuntime(IRuntime):
             if cell.type == "description":
                 markdown += cell.content + "\n\n"
             else:
-                markdown += f"```python\n{cell.content}\n```\n"
+                markdown += f"```python\n{cell.content.strip()}\n```\n"
                 if cell.output is not None:
                     markdown += f"```python\n# Output:\n{cell.output}\n```\n"
+                for plot in cell.plots:
+                    markdown += f"![{plot}]({plot})\n"
+                    self._download_file(plot, f"{dest_dir}/{plot}")
 
         markdown_path = f"{dest_dir}/{filename}.md"
 
@@ -90,21 +116,41 @@ class SSHPythonRuntime(IRuntime):
 
         return markdown_path
 
-    def _execute_command(self, command: str) -> str:
+    def _download_file(self, remote_path: str, local_path: str) -> None:
+        sftp_client = self.ssh.open_sftp()
+        sftp_client.get(remote_path, local_path)
+        sftp_client.close()
+
+    def _execute_command(self, command: str) -> Tuple[str, List[str]]:
         """
         Execute the given command in the remote shell.
 
         Returns:
             All output streams (both stdout and stderr) of the command.
+            If the command saves a plots, the filenames are returned as well.
         """
-        # TODO: handle plotting
 
         command = command.strip("\n")
         self.shell.send(command + "\n")
+
+        # Check if command saves a plot and extract the filename
+        filenames = re.findall(self._saveplot__path_regex, command)
 
         output_raw = ""
         self.shell.recv(len(command) + 1)
         while not output_raw.endswith(">>> "):
             output_raw += self.shell.recv(1024).decode("utf-8")
 
-        return output_raw.replace(">>> ", "")
+        for filename in filenames:
+            test_plot_command = f"os.path.exists('{filename}')\n"
+            self.shell.send(test_plot_command)
+            retval = ""
+            self.shell.recv(len(test_plot_command) + 1)
+            while not retval.endswith(">>> "):
+                retval += self.shell.recv(1024).decode("utf-8")
+            if retval.strip() == "False":
+                filenames.remove(filename)
+
+        output = output_raw.replace(">>> ", "")
+
+        return output, filenames

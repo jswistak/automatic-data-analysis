@@ -49,9 +49,23 @@ class IRuntime(ABC):
         pass
 
     @abstractmethod
+    def get_content(self, cell_index: int) -> str:
+        """
+        Returns the content of the cell with the given index.
+        """
+        pass
+
+    @abstractmethod
     def get_cell_output(self, cell_index: int) -> Union[str, None]:
         """
         Returns the output of the cell with the given index, if it is a code cell. Otherwise, returns None.
+        """
+        pass
+
+    @abstractmethod
+    def check_if_plot_in_output(self, cell_index: int) -> bool:
+        """
+        Returns true if the output of the cell with the given index contains a plot.
         """
         pass
 

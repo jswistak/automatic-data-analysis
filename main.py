@@ -7,6 +7,7 @@ from runtime.ssh_python_runtime import SSHPythonRuntime
 from prompts import INITIAL_PROMPT, PROMPT_SUFFIX
 from datetime import datetime
 
+# TODO: Rewrite the cell in case of error
 
 def main():
     load_dotenv()
@@ -84,21 +85,23 @@ def main():
             retval = None
             if code.startswith("python"):
                 code = code[6:]
-                bot.add_executed_code(code)
                 cell_idx = runtime.add_code(code)
                 runtime.execute_cell(cell_idx)
                 retval = runtime.get_cell_output(cell_idx)
+                plot_in_output = runtime.check_if_plot_in_output(cell_idx)
+                executed_code = runtime.get_content(cell_idx)
+                bot.add_executed_code(executed_code)
             user_message = (
                 user_message
                 + "\n"
-                + code
+                + executed_code
                 + "\n"
                 + (
                     retval
                     if retval
                     else (
                         "Code has been executed! Unfortunately, there is no output for this code snippet. Please remember to print the output."
-                        if ".show" not in code
+                        if not plot_in_output
                         else "While showing the plots it very helpful for me to understand the data. "
                         "Please also remember that I'm unable to provide you with the plots. Can you then also print the required numerical description for me to present it to you?"
                     )
