@@ -75,10 +75,7 @@ class NotebookRuntime(IRuntime):
                 case "stream":
                     out_stream += output.text.replace("\r", "")
                 case "execute_result" | "display_data":
-                    if (
-                        output.data["text/plain"]
-                        and output.data["text/plain"] != ""
-                    ):
+                    if output.data["text/plain"] and output.data["text/plain"] != "":
                         out_stream += output.data["text/plain"]
                 case "error":
                     out_stream += output.ename + "\n"
@@ -95,14 +92,12 @@ class NotebookRuntime(IRuntime):
             return False
 
         for output in cell.outputs:
-            if (
-                output.output_type == "display_data"
-                and "image/png" in output.data
-            ):
+            if output.output_type == "display_data" and "image/png" in output.data:
                 return True
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
-        assert os.path.exists(local_path), "File does not exist"
+        if not os.path.exists(local_path):
+            raise FileNotFoundError("File does not exist")
 
         filename = os.path.basename(dest_file_path)
         url = f"{self._base_url}/contents/{dest_file_path}"

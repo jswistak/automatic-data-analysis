@@ -96,7 +96,9 @@ class SSHPythonRuntime(IRuntime):
         return self._cells[cell_index].plots != []
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
-        assert os.path.exists(local_path), "File does not exist"
+        if not os.path.exists(local_path):
+            raise FileNotFoundError("File does not exist")
+
         sftp_client = self._ssh.open_sftp()
         sftp_client.put(local_path, dest_file_path)
         sftp_client.close()

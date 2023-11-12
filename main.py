@@ -2,7 +2,12 @@ from dotenv import load_dotenv
 from os import getenv
 from conversation import Conversation
 from completion import ConversationRoles
-from utils import Colors, print_assistant_message, print_user_message, print_message_prefix
+from utils import (
+    Colors,
+    print_assistant_message,
+    print_user_message,
+    print_message_prefix,
+)
 from runtime.ssh_python_runtime import SSHPythonRuntime
 from runtime.notebook_runtime import NotebookRuntime
 from prompts import INITIAL_PROMPT, USER_PROMPT_PREFIX
@@ -10,6 +15,7 @@ from datetime import datetime
 import argparse
 
 # TODO: Rewrite the cell in case of error
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -28,13 +34,15 @@ def main():
         dataset_path = args.dataset
     else:
         dataset_path = getenv("DATASET_PATH")
-    assert dataset_path, "Dataset path is not provided"
+    if not dataset_path:
+        raise ValueError("Dataset path is required but not provided")
 
     if args.runtime:
         runtime_type = args.runtime
     else:
         runtime_type = getenv("RUNTIME_TYPE")
-    assert runtime_type, "Runtime type is not provided"
+    if not runtime_type:
+        raise ValueError("Runtime type is required but not provided")
 
     match runtime_type:
         case "python-ssh":
@@ -93,7 +101,9 @@ def main():
         # Generate response
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
-            ConversationRoles.USER, user_message, system_message_prefix=USER_PROMPT_PREFIX
+            ConversationRoles.USER,
+            user_message,
+            system_message_prefix=USER_PROMPT_PREFIX,
         )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)
