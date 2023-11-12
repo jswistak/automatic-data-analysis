@@ -15,7 +15,7 @@ class ConversationRoles:
 # print("OpenAI API key has been set")
 
 
-def get_response(messages: list[dict], system_message_suffix: str = None) -> dict:
+def get_response(messages: list[dict]) -> dict:
     """Get completion from OpenAI GPT-3 API."""
     openai.api_key = getenv("OPENAI_API_KEY")
 
@@ -29,6 +29,7 @@ def get_response(messages: list[dict], system_message_suffix: str = None) -> dic
             }
         ]
     # TODO: Check for the maximum number of tokens
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages_local,

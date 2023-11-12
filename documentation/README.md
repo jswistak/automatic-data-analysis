@@ -1,0 +1,1 @@
+This folder contains files required by university to complete the thesis successfully. Except the thesis itself, files required by subject 'Group Project' are also included. Those files shall correspond to the real software engineering project documentation.

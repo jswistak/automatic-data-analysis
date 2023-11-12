@@ -2,15 +2,14 @@ from dotenv import load_dotenv
 from os import getenv
 from conversation import Conversation
 from completion import ConversationRoles
-from utils import Colors, print_assistant_message, print_user_message
+from utils import Colors, print_assistant_message, print_user_message, print_message_prefix
 from runtime.ssh_python_runtime import SSHPythonRuntime
 from runtime.notebook_runtime import NotebookRuntime
-from prompts import INITIAL_PROMPT, PROMPT_SUFFIX
+from prompts import INITIAL_PROMPT, USER_PROMPT_PREFIX
 from datetime import datetime
 import argparse
 
 # TODO: Rewrite the cell in case of error
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -86,13 +85,15 @@ def main():
         f"{runtime.get_cell_output_stream(cell_idx)}"
     )
 
+    print_message_prefix(USER_PROMPT_PREFIX)
+
     while "q" not in input(
         f"{Colors.BOLD_BLACK}Press 'q' to quit or any other key to continue: {Colors.END}"
     ):
         # Generate response
         print_user_message(user_message)
         assistant_message, code_snippets = bot.generate_response_with_snippets(
-            ConversationRoles.USER, user_message, system_message_suffix=PROMPT_SUFFIX
+            ConversationRoles.USER, user_message, system_message_prefix=USER_PROMPT_PREFIX
         )
         # r = get_response(conversation)
         # assistant_message = extract_message_from_response(r)

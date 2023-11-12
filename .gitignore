@@ -163,3 +163,11 @@ latest_conversation_number.txt
 .DS_Store
 data.csv
 /reports/
+
+# Runtime data
+/conversations/*
+!/conversations/images/
+/conversations/images/*
+
+# Office 365 temp files
+~$*

@@ -38,7 +38,7 @@ class Conversation:
         self,
         conversation_role: ConversationRoles = None,
         message_content: str = None,
-        system_message_suffix: str = None,
+        system_message_prefix: str = None,
     ) -> str:
         """Generate a GPT response and add it to the conversation history."""
         if message_content is not None:
@@ -51,8 +51,19 @@ class Conversation:
                 )
             self._add_to_conversation(conversation_role, message_content)
 
-        self.last_response = get_response(self.conversation, system_message_suffix)
+        # Add system message prefix to the local copy of the messages
+        conversation = self.conversation
+        if system_message_prefix is not None and len(conversation) > 2:
+            conversation[-1:-1] = [
+                {
+                    "role": ConversationRoles.SYSTEM,
+                    "content": system_message_prefix,
+                }
+            ]
+
+        self.last_response = get_response(conversation)
         message = Conversation.extract_message_from_response(self.last_response)
+        # Message prefix is not kept in the conversation history
         self._add_to_conversation(ConversationRoles.ASSISTANT, message)
 
         return message
@@ -61,14 +72,14 @@ class Conversation:
         self,
         conversation_role: ConversationRoles,
         message_content: str = None,
-        system_message_suffix: str = None,
+        system_message_prefix: str = None,
     ) -> tuple[str, list[str]]:
         """
         Generate a GPT response and add it to the conversation history.
         Return the response with captured code snippets.
         """
         message = self.generate_response(
-            conversation_role, message_content, system_message_suffix
+            conversation_role, message_content, system_message_prefix
         )
         code_snippets: list[str] = Conversation.extract_code_snippets_from_message(
             message
