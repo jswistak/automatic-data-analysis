@@ -5,10 +5,12 @@ import nbconvert
 import uuid
 import datetime
 import json
+from typing import Union
 from websocket import create_connection
+from runtime.iruntime import IRuntime
 
 
-class NotebookRuntime:
+class NotebookRuntime(IRuntime):
     """
     Class managing the Jupyter Notebook via REST API (kernel management) and WebSocket (execution).
 
@@ -42,67 +44,73 @@ class NotebookRuntime:
         self._session.close()
         self._ws.close()
 
-    def add_markdown_cell(self, content: str) -> None:
-        """Adds a markdown cell to the notebook."""
+    def add_description(self, description: str) -> int:
+        self._notebook.cells.append(nbformat.v4.new_markdown_cell(description))
+        return len(self._notebook.cells) - 1
 
-        self._notebook.cells.append(nbformat.v4.new_markdown_cell(content))
+    def add_code(self, code: str) -> int:
+        self._notebook.cells.append(nbformat.v4.new_code_cell(code))
+        return len(self._notebook.cells) - 1
 
-    def add_code_cell(self, content: str) -> None:
-        """Adds a code cell to the notebook."""
+    def remove_cell(self, cell_index: int = -1) -> None:
+        del self._notebook.cells[cell_index]
 
-        self._notebook.cells.append(nbformat.v4.new_code_cell(content))
+    def execute_cell(self, cell_index: int = -1) -> None:
+        if self._notebook.cells[cell_index].cell_type == "code":
+            self._notebook.cells[cell_index] = self._execute_cell(
+                self._notebook.cells[cell_index]
+            )
 
-    def get_cell_output(self, idx: int = -1) -> str:
-        """Returns the output of the selected cell."""
+    def get_content(self, cell_index: int = -1) -> str:
+        return self._notebook.cells[cell_index].source
 
-        return self._notebook.cells[idx].outputs
+    def get_cell_output_stream(self, cell_index: int = -1) -> Union[str, None]:
+        cell = self._notebook.cells[cell_index]
+        if cell.cell_type != "code":
+            return None
 
-    def remove_cell(self, idx: int = -1) -> None:
-        """Removes the selected cell from the notebook."""
+        out_stream = ""
+        for output in cell.outputs:
+            match output.output_type:
+                case "stream":
+                    out_stream += output.text.replace("\r", "")
+                case "execute_result" | "display_data":
+                    if (
+                        output.data["text/plain"]
+                        and output.data["text/plain"] != ""
+                    ):
+                        out_stream += output.data["text/plain"]
+                case "error":
+                    out_stream += output.ename + "\n"
+                    out_stream += output.evalue + "\n"
+                    out_stream += "\n".join(output.traceback)
+                case _:
+                    pass
 
-        del self._notebook.cells[idx]
+        return out_stream
 
-    def reset_outputs(self) -> None:
-        """Resets the outputs of all cells."""
+    def check_if_plot_in_output(self, cell_index: int = -1) -> bool:
+        cell = self._notebook.cells[cell_index]
+        if cell.cell_type != "code":
+            return False
 
-        for cell in self._notebook.cells:
-            if cell.cell_type == "code":
-                cell.outputs = []
-
-    def execute_cell(self, idx: int = -1) -> None:
-        """Executes the selected cell."""
-
-        if self._notebook.cells[idx].cell_type == "code":
-            self._notebook.cells[idx] = self._execute_cell(self._notebook.cells[idx])
-
-    def generate_pdf(self, output_path: str) -> None:
-        """Generates a pdf from the notebook."""
-
-        exporter = nbconvert.PDFExporter()
-        body, resources = exporter.from_notebook_node(self._notebook)
-
-        with open(output_path, "wb") as f:
-            f.write(body)
+        for output in cell.outputs:
+            if (
+                output.output_type == "display_data"
+                and "image/png" in output.data
+            ):
+                return True
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
-        """
-        Uploads the data files to the Jupyter Server (for kernel access).
+        assert os.path.exists(local_path), "File does not exist"
 
-        Parameters:
-            local_path: The path to the dataset on the local machine.
-            
-        """
-
-        assert os.path.exists(local_path), "Dataset file does not exist"
-
-        filename = local_path.split("/")[-1]
-        path = f"{self._remote_data_dir}{filename}"
-        url = f"{self._base_url}/contents/{path}"
+        filename = os.path.basename(dest_file_path)
+        url = f"{self._base_url}/contents/{dest_file_path}"
 
         with open(local_path, "rb") as f:
             body = {
                 "name": filename,
-                "path": path,
+                "path": dest_file_path,
                 "type": "file",
                 "format": "text",
                 "content": f.read().decode("utf-8"),
@@ -110,6 +118,14 @@ class NotebookRuntime:
             response = self._session.put(url, json=body)
 
         response.raise_for_status()
+
+    def generate_report(self, dest_dir: str, filename: str) -> str:
+        exporter = nbconvert.PDFExporter()
+        body, resources = exporter.from_notebook_node(self._notebook)
+
+        output_path = f"{dest_dir}/{filename}.pdf"
+        with open(output_path, "wb") as f:
+            f.write(body)
 
     def _execute_cell(
         self, cell: nbformat.notebooknode.NotebookNode
@@ -119,7 +135,7 @@ class NotebookRuntime:
         # TODO: Set timeout
 
         # Clear previous outputs
-        cell["outputs"] = [] 
+        cell.outputs = []
 
         content = {
             "code": cell.source,
@@ -148,14 +164,9 @@ class NotebookRuntime:
                     idle_signal_received = True
                 case "execute_reply":
                     execute_reply_received = True
-                    cell["execution_count"] = response["content"]["execution_count"]
+                    cell.execution_count = response["content"]["execution_count"]
                 case "stream" | "display_data" | "execute_result" | "error":
-                    cell["outputs"].append(
-                        {
-                            **response["content"],
-                            "output_type": response["msg_type"],
-                        }
-                    )
+                    cell.outputs.append(nbformat.v4.output_from_msg(response))
                 case _:
                     pass
 
