@@ -2,8 +2,13 @@ from typing import List
 
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
-from iassistant import IAssistant
+from .iassistant import IAssistant
 from openai import OpenAI
+import tiktoken
+
+
+MODEL_NAME = "gpt-3.5-turbo"
+enc = tiktoken.encoding_for_model(MODEL_NAME)
 
 
 def _get_response(response: ChatCompletion) -> str:
@@ -13,6 +18,13 @@ def _get_response(response: ChatCompletion) -> str:
     if not response.choices or not response.choices[0].message.content:
         raise ValueError("Invalid response or text not found")
     return response.choices[0].message.content
+
+
+def _get_message_tokens(message: str) -> int:
+    """
+    Get tokens from a message.
+    """
+    return len(enc.encode(message))
 
 
 class OpenAIAssistant(IAssistant):
@@ -34,8 +46,14 @@ class OpenAIAssistant(IAssistant):
         """
 
         response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=MODEL_NAME,
             messages=conversation,
         )
 
         return _get_response(response)
+
+    def get_conversation_tokens(self, conversation: List[ChatCompletionMessageParam]) -> int:
+        """
+        Get tokens from a conversation.
+        """
+        return sum(_get_message_tokens(message.content) for message in conversation)

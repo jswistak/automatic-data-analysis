@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Union
 
+from models.models import Message
+
 
 class IAssistant(ABC):
     """
@@ -11,7 +13,7 @@ class IAssistant(ABC):
     @abstractmethod
     def generate_response(
         self,
-        conversation: List[dict],
+        conversation: List[Message],
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
@@ -21,5 +23,12 @@ class IAssistant(ABC):
 
         Returns:
         str: The generated response from the LLM.
+        """
+        pass
+
+    @abstractmethod
+    def get_conversation_tokens(self, conversation: List[Message]) -> int:
+        """
+        Get tokens from a conversation.
         """
         pass
