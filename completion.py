@@ -21,13 +21,7 @@ def get_response(messages: list[dict]) -> dict:
 
     # Add system message suffix to the local copy of the messages
     messages_local = messages.copy()
-    if system_message_suffix is not None and len(messages_local) > 2:
-        messages_local[-1:-1] = [
-            {
-                "role": ConversationRoles.SYSTEM,
-                "content": system_message_suffix,
-            }
-        ]
+
     # TODO: Check for the maximum number of tokens
 
     response = openai.ChatCompletion.create(
