@@ -11,7 +11,7 @@ class IAssistant(ABC):
     @abstractmethod
     def generate_response(
         self,
-        conversation: List[dict] = None,
+        conversation: List[dict],
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.

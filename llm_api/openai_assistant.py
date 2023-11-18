@@ -21,7 +21,7 @@ class OpenAIAssistant(IAssistant):
 
     def generate_response(
             self,
-            conversation: List[ChatCompletionMessageParam] = None,
+            conversation: List[ChatCompletionMessageParam],
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
