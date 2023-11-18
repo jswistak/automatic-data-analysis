@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from os import getenv
 from conversation import Conversation
 from completion import ConversationRoles
+from runtime.iruntime import IRuntime
 from utils import (
     Colors,
     print_assistant_message,
@@ -17,54 +18,9 @@ import argparse
 # TODO: Rewrite the cell in case of error
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-dataset", type=str)
-    parser.add_argument(
-        "-runtime",
-        type=str,
-        default="jupyter-notebook",
-        choices=["python-ssh", "jupyter-notebook", "apache-zeppelin"],
-    )
-
-    load_dotenv()
-    args = parser.parse_args()  # Arguments have precedence over environment variables
-
-    if args.dataset:
-        dataset_path = args.dataset
-    else:
-        dataset_path = getenv("DATASET_PATH")
-    if not dataset_path:
-        raise ValueError("Dataset path is required but not provided")
-
-    if args.runtime:
-        runtime_type = args.runtime
-    else:
-        runtime_type = getenv("RUNTIME_TYPE")
-    if not runtime_type:
-        raise ValueError("Runtime type is required but not provided")
-
-    match runtime_type:
-        case "python-ssh":
-            runtime = SSHPythonRuntime(
-                host=getenv("SSH_HOST"),
-                port=getenv("SSH_PORT"),
-                username=getenv("SSH_USERNAME"),
-                password=getenv("SSH_PASSWORD"),
-            )
-        case "jupyter-notebook":
-            runtime = NotebookRuntime(
-                host=getenv("JUPYTER_HOST"),
-                port=getenv("JUPYTER_PORT"),
-                token=getenv("JUPYTER_TOKEN"),
-            )
-        case "apache-zeppelin":
-            raise NotImplementedError("Apache Zeppelin is not supported yet")
-        case _:
-            raise ValueError(f"Runtime type {runtime_type} is not supported")
-
+def analyze(dataset_path: str, runtime: IRuntime):
     # region: Loading dataset into runtime environment
-    dataset_file_name = getenv("DATASET_PATH").split("/")[-1]
+    dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(getenv("DATASET_PATH"), dataset_file_name)
 
     load_dataset_code = "\n".join(
@@ -170,4 +126,49 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dataset", type=str)
+    parser.add_argument(
+        "-runtime",
+        type=str,
+        default="jupyter-notebook",
+        choices=["python-ssh", "jupyter-notebook", "apache-zeppelin"],
+    )
+    load_dotenv()
+    args = parser.parse_args()  # Arguments have precedence over environment variables
+
+    if args.dataset:
+        dataset_path = args.dataset
+    else:
+        dataset_path = getenv("DATASET_PATH")
+    if not dataset_path:
+        raise ValueError("Dataset path is required but not provided")
+
+    if args.runtime:
+        runtime_type = args.runtime
+    else:
+        runtime_type = getenv("RUNTIME_TYPE")
+    if not runtime_type:
+        raise ValueError("Runtime type is required but not provided")
+
+    match runtime_type:
+        case "python-ssh":
+            runtime = SSHPythonRuntime(
+                host=getenv("SSH_HOST"),
+                port=getenv("SSH_PORT"),
+                username=getenv("SSH_USERNAME"),
+                password=getenv("SSH_PASSWORD"),
+            )
+        case "jupyter-notebook":
+            runtime = NotebookRuntime(
+                host=getenv("JUPYTER_HOST"),
+                port=getenv("JUPYTER_PORT"),
+                token=getenv("JUPYTER_TOKEN"),
+            )
+        case "apache-zeppelin":
+            raise NotImplementedError("Apache Zeppelin is not supported yet")
+        case _:
+            raise ValueError(f"Runtime type {runtime_type} is not supported")
+
+    analyze(dataset_path, runtime)
