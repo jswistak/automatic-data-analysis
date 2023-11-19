@@ -17,3 +17,7 @@ class ConversationRolesInternalEnum(str, Enum):
 class Message(BaseModel):
     role: ConversationRolesEnum | ConversationRolesInternalEnum
     content: str
+
+class LLMType(Enum):
+    GPT4 = "gpt4"
+    LLAMA2 = "llama2"

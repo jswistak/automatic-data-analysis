@@ -1,7 +1,7 @@
 from typing import List
 
-from models.models import Message, ConversationRolesEnum, ConversationRolesInternalEnum
-from prompt_manager.ipromptmanager import IPromptManager, AgentType, LLMType
+from models.models import Message, ConversationRolesEnum, ConversationRolesInternalEnum, LLMType
+from prompt_manager.ipromptmanager import IPromptManager
 
 CODE_GENERATION_PROMPT = """You are a data engineer, to help retrieve data by writing python code based on a request. In this interaction, you are providing data scientist with code snippets to analyze the dataset provided.
 
@@ -69,13 +69,13 @@ class FewShot(IPromptManager):
     def generate_conversation_context(
         self,
         conversation: List[Message],
-        agent_type: AgentType,
+        agent_type: ConversationRolesInternalEnum,
         llm_type: LLMType,
     ) -> List[Message]:
         match agent_type:
-            case AgentType.CODE_GENERATION:
+            case ConversationRolesInternalEnum.CODE:
                 return self._generate_code_generation_prompt(conversation, llm_type)
-            case AgentType.ANALYSIS_SUGGESTION_INTERPRETATION:
+            case ConversationRolesInternalEnum.ANALYSIS:
                 return self._generate_analysis_suggestion_interpretation_prompt(conversation, llm_type)
             case _:
                 raise NotImplementedError(f"Agent type {agent_type} not implemented.")
