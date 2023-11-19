@@ -1,5 +1,3 @@
-from typing import List
-
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 from .iassistant import IAssistant
@@ -33,13 +31,13 @@ class OpenAIAssistant(IAssistant):
 
     def generate_response(
             self,
-            conversation: List[ChatCompletionMessageParam],
+            conversation: list[ChatCompletionMessageParam],
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
 
         Parameters:
-        - conversation (List[dict]): A list of message objects representing the conversation history, where there may be multiple messages from the user and/or the system.
+        - conversation (list[dict]): A list of message objects representing the conversation history, where there may be multiple messages from the user and/or the system.
 
         Returns:
         str: The generated response from the LLM.
@@ -52,7 +50,7 @@ class OpenAIAssistant(IAssistant):
 
         return _get_response(response)
 
-    def get_conversation_tokens(self, conversation: List[ChatCompletionMessageParam]) -> int:
+    def get_conversation_tokens(self, conversation: list[ChatCompletionMessageParam]) -> int:
         """
         Get tokens from a conversation.
         """

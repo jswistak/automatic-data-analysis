@@ -1,16 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Dict, Union
 from enum import Enum
-
-
-class AgentType(Enum):
-    CODE_GENERATION = 1
-    ANALYSIS_SUGGESTION_INTERPRETATION = 2
-
-
-class LLMType(Enum):
-    GPT4 = 1
-    LLAMA2 = 2
+from models.models import LLMType, ConversationRolesInternalEnum
 
 
 class IPromptManager(ABC):
@@ -22,10 +12,10 @@ class IPromptManager(ABC):
     @abstractmethod
     def generate_conversation_context(
         self,
-        conversation: List[dict],
-        agent_type: AgentType,
+        conversation: list[dict],
+        agent_type: ConversationRolesInternalEnum,
         llm_type: LLMType,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """
         Generate a prompt for a specific agent and LLM type based on the current conversation.
 
