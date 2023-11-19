@@ -9,6 +9,11 @@ class ConversationRolesEnum(str, Enum):
     FUNCTION = "function"
 
 
+class ConversationRolesInternalEnum(str, Enum):
+    CODE = "code_generation"
+    ANALYSIS = "analysis_suggestion_interpretation"
+
+
 class Message(BaseModel):
-    role: ConversationRolesEnum
+    role: ConversationRolesEnum | ConversationRolesInternalEnum
     content: str
