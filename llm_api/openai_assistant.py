@@ -1,6 +1,6 @@
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
-from .iassistant import IAssistant
+from llm_api.iassistant import IAssistant
 from openai import OpenAI
 import tiktoken
 
