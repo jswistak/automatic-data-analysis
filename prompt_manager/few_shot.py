@@ -1,5 +1,3 @@
-from typing import List
-
 from models.models import Message, ConversationRolesEnum, ConversationRolesInternalEnum, LLMType
 from prompt_manager.ipromptmanager import IPromptManager
 
@@ -44,7 +42,7 @@ perform_feature_selection(data, data.columns.drop(features_to_exclude).drop('dia
 [END OF EXAMPLES]"""
 
 
-ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT = """You are a data scientist, to help analyze the dataset. The user a data engineer will provide you with code snippets and their output. In this interaction, you are responsible for analyzing the dataset and interpreting the results.
+ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT = """You are a data scientist, your job is to analyze the dataset by coming up with the new ideas. The user a data engineer will provide you with code snippets and their output. In this interaction, you are responsible for analyzing the dataset and interpreting the results.
 
 You have the following goals for this conversation:
     - (PRIMARY) Proactively take actions to perform tabular data analysis. You should perform data cleaning using, conduct exploratory data analysis (EDA), and make inferences based on the analysis. You have to guide data engineer through the data processing by providing insights without explicit prompting.
@@ -68,10 +66,10 @@ class FewShot(IPromptManager):
 
     def generate_conversation_context(
         self,
-        conversation: List[Message],
+        conversation: list[Message],
         agent_type: ConversationRolesInternalEnum,
         llm_type: LLMType,
-    ) -> List[Message]:
+    ) -> list[Message]:
         match agent_type:
             case ConversationRolesInternalEnum.CODE:
                 return self._generate_code_generation_prompt(conversation, llm_type)
@@ -80,7 +78,7 @@ class FewShot(IPromptManager):
             case _:
                 raise NotImplementedError(f"Agent type {agent_type} not implemented.")
 
-    def _change_roles(self, conversation: List[Message], roles_dict: object, limit: int = 5) -> List[Message]:
+    def _change_roles(self, conversation: list[Message], roles_dict: object, limit: int = 5) -> list[Message]:
         llm_conversation = []
         for message in conversation[:limit]:
             msg = message.model_copy()
@@ -91,7 +89,7 @@ class FewShot(IPromptManager):
             llm_conversation.append(msg)
         return llm_conversation
 
-    def _generate_code_generation_prompt(self, conversation: List[Message], llm_type: LLMType) -> List[Message]:
+    def _generate_code_generation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
         roles_dict = {
             ConversationRolesInternalEnum.ANALYSIS: ConversationRolesEnum.USER,
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.ASSISTANT,
@@ -103,13 +101,13 @@ class FewShot(IPromptManager):
 
         return llm_conversation
 
-    def _generate_analysis_suggestion_interpretation_prompt(self, conversation: List[Message], llm_type: LLMType) -> List[Message]:
+    def _generate_analysis_suggestion_interpretation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
         roles_dict = {
             ConversationRolesInternalEnum.ANALYSIS: ConversationRolesEnum.ASSISTANT,
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.USER,
         }
         llm_conversation = [
-            Message(role=ConversationRolesEnum.SYSTEM, content=ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT)
+            Message(role=ConversationRolesEnum.SYSTEM, content=ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT),
             *self._change_roles(conversation, roles_dict)
 
         ]

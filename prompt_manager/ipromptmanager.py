@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from models.models import LLMType, ConversationRolesInternalEnum
+from models.models import LLMType, ConversationRolesInternalEnum, Message
 
 
 class IPromptManager(ABC):
@@ -12,10 +12,10 @@ class IPromptManager(ABC):
     @abstractmethod
     def generate_conversation_context(
         self,
-        conversation: list[dict],
+        conversation: list[Message],
         agent_type: ConversationRolesInternalEnum,
         llm_type: LLMType,
-    ) -> list[dict]:
+    ) -> list[Message]:
         """
         Generate a prompt for a specific agent and LLM type based on the current conversation.
 
