@@ -37,7 +37,6 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
     runtime.execute_cell(cell_idx)
 
     cell_idx = runtime.add_code("df.head()")
-
     runtime.execute_cell(cell_idx)
     initial_message = "Dataset is loaded into the runtime in the variable 'df'.'\nYou can try to print the first 5 rows of the dataset by executing the following code: ```python\ndf.head()```"
     conv.append(Message(role=ConversationRolesInternalEnum.CODE, content=format_code_assistant_message(initial_message,
@@ -89,7 +88,7 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
     )
     print(f"Report has been saved to {report_path}")
 
-    json_models = [model.json() for model in conv]
+    json_models = [model.model_dump_json() for model in conv]
 
     with open("conversation.json", "w") as f:
         json.dump(json_models, f, indent=4)
