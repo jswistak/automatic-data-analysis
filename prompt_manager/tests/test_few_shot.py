@@ -5,7 +5,9 @@ from prompt_manager.few_shot import FewShot, ConversationRolesInternalEnum, Conv
 from unittest.mock import patch
 
 # Mocking the Message class
-mock_message = MagicMock(spec=Message)
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def mock_message():
+    MagicMock(spec=Message)
 
 
 @pytest.fixture
