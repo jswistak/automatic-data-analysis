@@ -36,9 +36,9 @@ class Colors(str, Enum):
 def print_message(msg: Message, color: Colors) -> None:
     """Colorful formatting of user message."""
     print(
-        f"{Colors.BOLD_GREEN}{msg.role}{Colors.END}",
-        f"{color}\n",
+        f"{Colors.BOLD_GREEN.value}{msg.role}{Colors.END.value}",
+        f"{color.value}\n",
         msg.content,
-        f"{Colors.END}\n",
+        f"{Colors.END.value}\n",
     )
 
