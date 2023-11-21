@@ -14,3 +14,4 @@ websocket-client==0.58.0
 ipython==8.15.0
 pydantic~=2.5.1
 pytest==7.4.3
+pdoc==14.1.0
