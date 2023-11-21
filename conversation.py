@@ -1,122 +1,93 @@
 import json
 from typing import List
 
-from models.models import Message
+from models.models import Message, ConversationRolesInternalEnum, LLMType
+from runtime.iruntime import IRuntime
+from llm_api.iassistant import IAssistant
+from prompt_manager.ipromptmanager import IPromptManager
+from utils import print_message, Colors
 
 
-def format_code_assistant_message(message: str, code_output: str) -> str:
-    """Format the code assistant message."""
-    return f"{message}\n\nHere is the output of the following code:\n```{code_output}```"
+class Conversation:
+    """Conversation class that handles the conversation flow and stores the conversation history."""
+    def __init__(self, runtime: IRuntime, code_assistant: IAssistant, analysis_assistant: IAssistant,
+                 prompt: IPromptManager, conversation: List[Message] = None):
+        self.conversation: List[Message] = conversation
+        self.runtime: IRuntime = runtime
+        self.code_assistant: IAssistant = code_assistant
+        self.analysis_assistant: IAssistant = analysis_assistant
+        self.prompt: IPromptManager = prompt
 
+    @staticmethod
+    def format_code_assistant_message(message: str, code_output: str) -> str:
+        """Format the code assistant message."""
+        return f"{message}\n\nHere is the output of the following code:\n```{code_output}```"
 
-def extract_code_snippets_from_message(message: str) -> list[str]:
-    """Extract code snippets from message."""
-    try:
-        code_blocks = message.split("```")[1::2]
-        return code_blocks
-    except Exception as e:
-        raise Exception("No code snippets found in response") from e
+    @staticmethod
+    def extract_code_snippets_from_message(message: str) -> list[str]:
+        """Extract code snippets from message."""
+        try:
+            code_blocks = message.split("```")[1::2]
+            return code_blocks
+        except Exception as e:
+            raise Exception("No code snippets found in response") from e
 
-# class Conversation:
-#     """Conversation class that handles the conversation flow and stores the conversation history."""
-#
-#     @staticmethod
-#     def extract_code_snippets_from_message(message: str) -> list[str]:
-#         """Extract code snippets from message."""
-#         try:
-#             code_blocks = message.split("```")[1::2]
-#             return code_blocks
-#         except Exception as e:
-#             raise Exception("No code snippets found in response") from e
-#
-#     def __init__(self, conversation: List[Message] = None, python_code_executed: str = None):
-#         self.conversation: List[Message] = conversation
-#         self.python_code_executed: str = python_code_executed
-#         self.last_response = None
-#
-#     def _add_to_conversation(self, role, content):
-#         self.conversation.append({"role": role, "content": content})
-#
-#     def add_executed_code(self, code: str) -> None:
-#         """Add executed code to the conversation history."""
-#         self.python_code_executed += code + "\n"
-#
-#     def generate_response(
-#         self,
-#         conversation_role: ConversationRoles = None,
-#         message_content: str = None,
-#         system_message_prefix: str = None,
-#     ) -> str:
-#         """Generate a GPT response and add it to the conversation history."""
-#         if message_content is not None:
-#             if conversation_role not in [
-#                 ConversationRoles.USER,
-#                 ConversationRoles.SYSTEM,
-#             ]:
-#                 raise Exception(
-#                     "Only user and system can add messages to the conversation"
-#                 )
-#             self._add_to_conversation(conversation_role, message_content)
-#
-#         # Add system message prefix to the local copy of the messages
-#         conversation = self.conversation
-#         if system_message_prefix is not None and len(conversation) > 2:
-#             conversation[-1:-1] = [
-#                 {
-#                     "role": ConversationRoles.SYSTEM,
-#                     "content": system_message_prefix,
-#                 }
-#             ]
-#
-#         self.last_response = get_response(conversation)
-#         message = Conversation.extract_message_from_response(self.last_response)
-#         # Message prefix is not kept in the conversation history
-#         self._add_to_conversation(ConversationRoles.ASSISTANT, message)
-#
-#         return message
-#
-#     def generate_response_with_snippets(
-#         self,
-#         conversation_role: ConversationRoles,
-#         message_content: str = None,
-#         system_message_prefix: str = None,
-#     ) -> tuple[str, list[str]]:
-#         """
-#         Generate a GPT response and add it to the conversation history.
-#         Return the response with captured code snippets.
-#         """
-#         message = self.generate_response(
-#             conversation_role, message_content, system_message_prefix
-#         )
-#         code_snippets: list[str] = Conversation.extract_code_snippets_from_message(
-#             message
-#         )
-#         return message, code_snippets
-#
-#     def save_conversation_to_file(self) -> None:
-#         """Save the conversation history to a file."""
-#         print("Saving conversation...")
-#         # Retrieve the latest conversation number
-#         number_file_path = "latest_conversation_number.txt"
-#         try:
-#             with open(number_file_path, "r") as number_file:
-#                 latest_conversation_number = int(number_file.read())
-#         except FileNotFoundError:
-#             latest_conversation_number = 1
-#
-#         conversation_path = (
-#             f"conversations/conversation{latest_conversation_number:04d}.json"
-#         )
-#         with open(conversation_path, "w") as f:
-#             json.dump(self.conversation, f)
-#
-#         if self.python_code_executed is not None:
-#             code_path = f"conversations/conversation{latest_conversation_number:04d}.py"
-#             with open(code_path, "w") as f:
-#                 f.write(self.python_code_executed)
-#
-#         latest_conversation_number += 1
-#         with open(number_file_path, "w") as number_file:
-#             number_file.write(str(latest_conversation_number))
-#
-#         print("Conversation saved to", conversation_path)
+    def get_conversation(self) -> List[Message]:
+        """Get the conversation."""
+        return self.conversation
+
+    def _add_to_conversation(self, role: ConversationRolesInternalEnum, content: str) -> None:
+        self.conversation.append(Message(role=role, content=content))
+
+    def _get_last_message(self) -> Message:
+        return self.conversation[-1]
+
+    def _send_message_analysis(self) -> None:
+        analysis_conv = self.prompt.generate_conversation_context(self.conversation,
+                                                                  ConversationRolesInternalEnum.ANALYSIS, LLMType.GPT4)
+        analysis_response = self.analysis_assistant.generate_response(analysis_conv)
+        self._add_to_conversation(ConversationRolesInternalEnum.ANALYSIS, analysis_response)
+        print_message(self._get_last_message(), Colors.BLUE)
+
+    def _execute_python_snippet(self, code: str) -> int:
+        cell_idx = self.runtime.add_code(code)
+        self.runtime.execute_cell(cell_idx)
+        return cell_idx
+
+    def _check_if_plot_in_output(self, cell_idx: int) -> bool:
+        return self.runtime.check_if_plot_in_output(cell_idx)
+
+    def _get_cell_output_stream(self, cell_idx: int) -> str:
+        return self.runtime.get_cell_output_stream(cell_idx)
+
+    def _send_message_code(self) -> None:
+        code_conv = self.prompt.generate_conversation_context(self.conversation, ConversationRolesInternalEnum.CODE,
+                                                              LLMType.GPT4)
+        code_response = self.code_assistant.generate_response(code_conv)
+        code_snippets = self.extract_code_snippets_from_message(code_response)
+        output = []
+        for code_snippet in code_snippets:
+            if code_snippet.startswith("python"):
+                code = code_snippet[6:]
+                cell_idx = self._execute_python_snippet(code)
+                output.append(self._get_cell_output_stream(cell_idx))
+                if self._check_if_plot_in_output(cell_idx):
+                    output[-1] = "Plot generated, but cannot be interpreted in a text format."
+        if len(output) > 0:
+            code_response = self.format_code_assistant_message(code_response, "\n".join(output))
+
+        self._add_to_conversation(Message(role=ConversationRolesInternalEnum.CODE, content=code_response))
+        print_message(self._get_last_message(), Colors.PURPLE)
+
+    def perform_next_step(self) -> Message:
+        """Perform the next step in the conversation."""
+        # Generate response
+        last_message = self._get_last_message()
+        if last_message.role == ConversationRolesInternalEnum.CODE:
+            self._send_message_analysis()
+        elif last_message.role == ConversationRolesInternalEnum.ANALYSIS:
+            self._send_message_code()
+        else:
+            raise Exception(f"Invalid conversation role: {last_message.role}")
+
+        return self._get_last_message()
