@@ -57,9 +57,10 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
     print(f"Report has been saved to {report_path}")
 
     conv_json = conv.get_conversation_json()
-
-    with open("conversation.json", "w") as f:
+    conv_path = f"conversations/conversation-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+    with open(conv_path, "w") as f:
         json.dump(conv_json, f, indent=4)
+    print(f"Conversation has been saved to {conv_path}")
 
 
 if __name__ == "__main__":
