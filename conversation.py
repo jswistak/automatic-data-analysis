@@ -24,7 +24,7 @@ class Conversation:
         return f"{message}\n\nHere is the output of the following code:\n```{code_output}```"
 
     @staticmethod
-    def extract_code_snippets_from_message(message: str) -> list[str]:
+    def _extract_code_snippets_from_message(message: str) -> list[str]:
         """Extract code snippets from message."""
         try:
             code_blocks = message.split("```")[1::2]
@@ -64,7 +64,7 @@ class Conversation:
         code_conv = self.prompt.generate_conversation_context(self.conversation, ConversationRolesInternalEnum.CODE,
                                                               LLMType.GPT4)
         code_response = self.code_assistant.generate_response(code_conv)
-        code_snippets = self.extract_code_snippets_from_message(code_response)
+        code_snippets = self._extract_code_snippets_from_message(code_response)
         output = []
         for code_snippet in code_snippets:
             if code_snippet.startswith("python"):
@@ -76,7 +76,7 @@ class Conversation:
         if len(output) > 0:
             code_response = self.format_code_assistant_message(code_response, "\n".join(output))
 
-        self._add_to_conversation(Message(role=ConversationRolesInternalEnum.CODE, content=code_response))
+        self._add_to_conversation(role=ConversationRolesInternalEnum.CODE, content=code_response)
         print_message(self._get_last_message(), Colors.PURPLE)
 
     def perform_next_step(self) -> Message:
@@ -91,3 +91,7 @@ class Conversation:
             raise Exception(f"Invalid conversation role: {last_message.role}")
 
         return self._get_last_message()
+
+    def get_conversation_json(self) -> str:
+        """Get the conversation in json format."""
+        return json.dumps([message.model_dump_json() for message in self.conversation])
