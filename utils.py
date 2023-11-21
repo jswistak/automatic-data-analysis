@@ -1,8 +1,12 @@
+from enum import Enum
+
 import pandas as pd
 from typing import List
 
+from models.models import Message
 
-class Colors:
+
+class Colors(str, Enum):
     """Color codes for terminal output."""
 
     # Regular Colors
@@ -29,38 +33,12 @@ class Colors:
     END = "\033[0m"
 
 
-def print_user_message(user_message: str) -> None:
+def print_message(msg: Message, color: Colors) -> None:
     """Colorful formatting of user message."""
     print(
-        f"{Colors.BOLD_GREEN}User message:{Colors.END}",
-        f"{Colors.GREEN}\n",
-        user_message,
-        f"{Colors.END}\n",
+        f"{Colors.BOLD_GREEN.value}{msg.role}{Colors.END.value}",
+        f"{color.value}\n",
+        msg.content,
+        f"{Colors.END.value}\n",
     )
 
-
-def print_assistant_message(assistant_message: str, code_snippets: List[str]) -> None:
-    """Colorful formatting of assistant message and code snippets."""
-    print(
-        f"{Colors.BOLD_BLUE}Assistant message:{Colors.END}",
-        f"{Colors.CYAN}\n",
-        assistant_message,
-        f"{Colors.END}\n",
-    )
-    code_snippets = "\n\n".join(code_snippets)
-    print(
-        f"{Colors.BOLD_RED}Assistant message code snippets:{Colors.END}",
-        f"{Colors.RED}\n",
-        code_snippets if code_snippets else "No code snippets",
-        f"{Colors.END}\n",
-    )
-
-
-def print_message_prefix(message_prefix: str) -> None:
-    """Colorful formatting of user's message prefix."""
-    print(
-        f"{Colors.BOLD_YELLOW}User's message prefix (added before last user's message as system's message, not persisted in conversation):{Colors.END}",
-        f"{Colors.YELLOW}\n",
-        message_prefix,
-        f"{Colors.END}\n",
-    )
