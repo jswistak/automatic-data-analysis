@@ -47,18 +47,11 @@ class Conversation:
                                                                    ConversationRolesInternalEnum.ANALYSIS, LLMType.GPT4)
         analysis_response = self._analysis_assistant.generate_response(analysis_conv)
         self._add_to_conversation(ConversationRolesInternalEnum.ANALYSIS, analysis_response)
-        print_message(self._get_last_message(), Colors.BLUE)
 
     def _execute_python_snippet(self, code: str) -> int:
         cell_idx = self._runtime.add_code(code)
         self._runtime.execute_cell(cell_idx)
         return cell_idx
-
-    def _check_if_plot_in_output(self, cell_idx: int) -> bool:
-        return self._runtime.check_if_plot_in_output(cell_idx)
-
-    def _get_cell_output_stream(self, cell_idx: int) -> str:
-        return self._runtime.get_cell_output_stream(cell_idx)
 
     def _send_message_code(self) -> None:
         code_conv = self._prompt.generate_conversation_context(self._conversation, ConversationRolesInternalEnum.CODE,
@@ -70,14 +63,13 @@ class Conversation:
             if code_snippet.startswith("python"):
                 code = code_snippet[6:]
                 cell_idx = self._execute_python_snippet(code)
-                output.append(self._get_cell_output_stream(cell_idx))
-                if self._check_if_plot_in_output(cell_idx):
+                output.append(self._runtime.get_cell_output_stream(cell_idx))
+                if self._runtime.check_if_plot_in_output(cell_idx):
                     output[-1] = "Plot generated, but cannot be interpreted in a text format."
         if len(output) > 0:
             code_response = self.format_code_assistant_message(code_response, "\n".join(output))
 
         self._add_to_conversation(role=ConversationRolesInternalEnum.CODE, content=code_response)
-        print_message(self._get_last_message(), Colors.PURPLE)
 
     def perform_next_step(self) -> Message:
         """Perform the next step in the conversation."""
