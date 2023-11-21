@@ -49,6 +49,7 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
             f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
     ):
         msg: Message = conv.perform_next_step()
+        print_message(msg, Colors.PURPLE if msg.role == ConversationRolesInternalEnum.CODE else Colors.BLUE)
 
     report_path = runtime.generate_report(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
