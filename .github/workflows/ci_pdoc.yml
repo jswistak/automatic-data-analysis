@@ -22,7 +22,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: pdoc html-dir docs completion.py utils.py main.py conversation.py runtime prompt_manager model llm_api
+      - run:  pdoc3 --html -o docs/ ./
 
       - uses: actions/upload-pages-artifact@v2
         with:
