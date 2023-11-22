@@ -28,8 +28,8 @@ jobs:
 
       - name: Build documentation
         run: |
-          pdoc3 --html -o ./_docs ./
-          mv docs/*/* ./_site/
+          pdoc3 --html -o docs ./
+          mv docs/*/* _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
