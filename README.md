@@ -1,5 +1,7 @@
 # Automatic Data Analysis
 
+### [Code documentation (pdoc3)](https://jswistak.github.io/automatic-data-analysis)
+
 ## Description
 
 ## Prerequisites
