@@ -121,6 +121,7 @@ class NotebookRuntime(IRuntime):
         output_path = f"{dest_dir}/{filename}.pdf"
         with open(output_path, "wb") as f:
             f.write(body)
+        return output_path
 
     def _execute_cell(
         self, cell: nbformat.notebooknode.NotebookNode
