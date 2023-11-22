@@ -29,6 +29,7 @@ jobs:
       - name: Build documentation
         run: |
           pdoc3 --html -o docs ./
+          mkdir _site
           mv docs/*/* _site/
 
       - name: Upload artifact
