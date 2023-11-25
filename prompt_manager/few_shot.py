@@ -1,7 +1,19 @@
-from models.models import Message, ConversationRolesEnum, ConversationRolesInternalEnum, LLMType
+from models.models import (
+    Message,
+    ConversationRolesEnum,
+    ConversationRolesInternalEnum,
+    LLMType,
+)
 from prompt_manager.ipromptmanager import IPromptManager
 
-CODE_GENERATION_PROMPT = """You are a data engineer, to help retrieve data by writing python code based on a request. In this interaction, you are providing data scientist with code snippets to analyze the dataset provided.
+
+class FewShot(IPromptManager):
+    """
+    Class for a Few Shot Prompt Manager.
+    It generates specific prompts for a given Agent (Code Generation or Analysis Suggestion and Interpretation) based on the current conversation and the LLM type.
+    """
+
+    _CODE_GENERATION_PROMPT = """You are a data engineer, to help retrieve data by writing python code based on a request. In this interaction, you are providing data scientist with code snippets to analyze the dataset provided.
 
 You have the following goals for this conversation:
  - (PRIMARY) You have to follow the data scientist's request and generate the requested Python code. Such that it will print the requested information.
@@ -41,8 +53,7 @@ perform_feature_selection(data, data.columns.drop(features_to_exclude).drop('dia
 ```
 [END OF EXAMPLES]"""
 
-
-ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT = """You are a data scientist, your job is to analyze the dataset by coming up with the new ideas. The user a data engineer will provide you with code snippets and their output. In this interaction, you are responsible for analyzing the dataset and interpreting the results.
+    _ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT = """You are a data scientist, your job is to analyze the dataset by coming up with the new ideas. The user a data engineer will provide you with code snippets and their output. In this interaction, you are responsible for analyzing the dataset and interpreting the results.
 
 You have the following goals for this conversation:
     - (PRIMARY) Proactively take actions to perform tabular data analysis. You should perform data cleaning using, conduct exploratory data analysis (EDA), and make inferences based on the analysis. You have to guide data engineer through the data processing by providing insights without explicit prompting.
@@ -60,12 +71,12 @@ Idea: I want to know the distribution of the data in the dataset.
 ```
 [END OF EXAMPLES]"""
 
-
-class FewShot(IPromptManager):
     def __init__(self):
         super().__init__()
 
-    def _generate_code_generation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
+    def _generate_code_generation_prompt(
+        self, conversation: list[Message], llm_type: LLMType
+    ) -> list[Message]:
         """
         Generate a prompt for a code generation agent based on the current conversation.
 
@@ -81,13 +92,17 @@ class FewShot(IPromptManager):
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.ASSISTANT,
         }
         llm_conversation = [
-            Message(role=ConversationRolesEnum.SYSTEM, content=CODE_GENERATION_PROMPT),
-            *self._change_roles(conversation, roles_dict)
+            Message(
+                role=ConversationRolesEnum.SYSTEM, content=self._CODE_GENERATION_PROMPT
+            ),
+            *self._change_roles(conversation, roles_dict),
         ]
 
         return llm_conversation
 
-    def _generate_analysis_suggestion_interpretation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
+    def _generate_analysis_suggestion_interpretation_prompt(
+        self, conversation: list[Message], llm_type: LLMType
+    ) -> list[Message]:
         """
         Generate a prompt for a code generation agent based on the current conversation.
 
@@ -103,11 +118,11 @@ class FewShot(IPromptManager):
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.USER,
         }
         llm_conversation = [
-            Message(role=ConversationRolesEnum.SYSTEM, content=ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT),
-            *self._change_roles(conversation, roles_dict)
-
+            Message(
+                role=ConversationRolesEnum.SYSTEM,
+                content=self._ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT,
+            ),
+            *self._change_roles(conversation, roles_dict),
         ]
 
         return llm_conversation
-            
-    
