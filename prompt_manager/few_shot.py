@@ -64,31 +64,6 @@ class FewShot(IPromptManager):
     def __init__(self):
         pass
 
-    def generate_conversation_context(
-        self,
-        conversation: list[Message],
-        agent_type: ConversationRolesInternalEnum,
-        llm_type: LLMType,
-    ) -> list[Message]:
-        match agent_type:
-            case ConversationRolesInternalEnum.CODE:
-                return self._generate_code_generation_prompt(conversation, llm_type)
-            case ConversationRolesInternalEnum.ANALYSIS:
-                return self._generate_analysis_suggestion_interpretation_prompt(conversation, llm_type)
-            case _:
-                raise NotImplementedError(f"Agent type {agent_type} not implemented.")
-
-    def _change_roles(self, conversation: list[Message], roles_dict: object, limit: int = 5) -> list[Message]:
-        llm_conversation = []
-        for message in conversation[:limit]:
-            msg = message.model_copy()
-            try:
-                msg.role = roles_dict[msg.role]
-            except KeyError:
-                raise NotImplementedError(f"Conversation role {message.role} not implemented.")
-            llm_conversation.append(msg)
-        return llm_conversation
-
     def _generate_code_generation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
         roles_dict = {
             ConversationRolesInternalEnum.ANALYSIS: ConversationRolesEnum.USER,
@@ -96,7 +71,7 @@ class FewShot(IPromptManager):
         }
         llm_conversation = [
             Message(role=ConversationRolesEnum.SYSTEM, content=CODE_GENERATION_PROMPT),
-            *self._change_roles(conversation, roles_dict)
+            *super()._change_roles(conversation, roles_dict)
         ]
 
         return llm_conversation
@@ -108,7 +83,7 @@ class FewShot(IPromptManager):
         }
         llm_conversation = [
             Message(role=ConversationRolesEnum.SYSTEM, content=ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT),
-            *self._change_roles(conversation, roles_dict)
+            *super()._change_roles(conversation, roles_dict)
 
         ]
 
