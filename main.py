@@ -2,47 +2,57 @@ import argparse
 from os import getenv
 
 from dotenv import load_dotenv
+from typing import Union
 
 from core.analysis import analyze
+from llm_api.iassistant import IAssistant
 from llm_api.openai_assistant import OpenAIAssistant
+from prompt_manager.ipromptmanager import IPromptManager
 from prompt_manager.few_shot import FewShot
 from prompt_manager.zero_shot import ZeroShot
+from runtime.iruntime import IRuntime
 from runtime.notebook_runtime import NotebookRuntime
 from runtime.ssh_python_runtime import SSHPythonRuntime
 
-runtimes = {
+runtimes: dict[str, IRuntime] = {
     "python-ssh": SSHPythonRuntime,
     "jupyter-notebook": NotebookRuntime,
 }
 
-assistants = {
+assistants: dict[str, IAssistant] = {
     "openai": OpenAIAssistant,
 }
 
-prompts = {
+prompts: dict[str, IPromptManager] = {
     "few-shot": FewShot,
     "zero-shot": ZeroShot,
 }
 
-
 def main(
     dataset_path: str,
-    runtime: str,
-    code_assistant: str,
-    analysis_assistant: str,
-    prompt: str,
+    runtime_name: str,
+    code_assistant_name: str,
+    analysis_assistant_name: str,
+    prompt_name: str,
     **kwargs,
 ):
     """Program running the automated tabular data analysis using LLM."""
-    runtime = runtimes[runtime](**kwargs.get("runtime_kwargs", {}))
-    code_assistant = assistants[code_assistant](
+
+    runtime: IRuntime = runtimes.get(runtime_name)(**kwargs.get("runtime_kwargs", {}))
+    code_assistant: IAssistant = assistants[code_assistant_name](
         **kwargs.get("code_assistant_kwargs", {})
     )
-    analysis_assistant = assistants[analysis_assistant](
+    analysis_assistant: IAssistant = assistants[analysis_assistant_name](
         **kwargs.get("analysis_assistant_kwargs", {})
     )
-    prompt = prompts[prompt](**kwargs.get("prompt_kwargs", {}))
-    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt)
+    prompt_manager: IPromptManager = prompts[prompt_name](**kwargs.get("prompt_kwargs", {}))
+    
+    if not isinstance(runtime, IRuntime) or not isinstance(code_assistant, IAssistant) or not isinstance(analysis_assistant, IAssistant) or not isinstance(prompt_manager, IPromptManager):
+        raise ValueError(
+            f"Error while initializing the modules."
+        )
+
+    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager)
 
 
 def get_value(env_var: str, args: argparse.Namespace) -> str:
