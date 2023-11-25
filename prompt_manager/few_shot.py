@@ -60,9 +60,10 @@ Idea: I want to know the distribution of the data in the dataset.
 ```
 [END OF EXAMPLES]"""
 
+
 class FewShot(IPromptManager):
     def __init__(self):
-        pass
+        super().__init__()
 
     def _generate_code_generation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
         """
