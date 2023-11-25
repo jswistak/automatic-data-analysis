@@ -1,12 +1,16 @@
 {
     "cSpell.words": [
+        "dotenv",
         "Ename",
         "endregion",
         "Evalue",
+        "iassistant",
+        "ipromptmanager",
         "iruntime",
         "nbconvert",
         "nbformat",
         "notebooknode",
+        "OPENAI",
         "saveplot"
     ]
 }

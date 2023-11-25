@@ -8,25 +8,30 @@
 
 **Python version: 3.10**
 
-Whole solution (both app and execution runtime) relies on configuration file (for local use). It should be named `.env` and placed in the root directory. Its content should be as follows:
+Whole solution (both app and execution runtime) relies on configuration file (for local use). It should be named `.env` and placed in the root directory. Its content should be as follows (where only one runtime section uncommented at at time, in given ):
 
 ```
+# general
 DATASET_PATH=<path to dataset>
+RUNTIME=<selected runtime> # apache-zeppelin, python-ssh, jupyter-notebook
+CODE_ASSISTANT=<selected LLM> # openai
+ANALYSIS_ASSISTANT=<selected LLM> # openai
+PROMPT=<selected prompting strategy> # few-shot
 
 # python-ssh-runtime
-SSH_HOST=<ssh_hostname, for local development 127.0.0.1>
-SSH_PORT=<ssh_port>
-SSH_USERNAME=<username>
-SSH_PASSWORD=<password>
+# HOST=<host of python-ssh>
+# PORT=<port of python-ssh>
+# USERNAME=<username to access python-ssh>
+# PASSWORD=<password to access python-ssh>
 
 # jupyter-notebook-runtime
-JUPYTER_HOST=<jupyter_hostname, for local development 127.0.0.1>
-JUPYTER_PORT=<jupyter_port>
-JUPYTER_TOKEN=<token_used_later_for_authentication>
+HOST=<host of jupyter>
+PORT=<port of jupyter>
+TOKEN=<token to access jupyter>
 
 # apache-zeppelin-runtime
-ZEPPELIN_HOST=<zeppelin_hostname, for local development 127.0.0.1>
-ZEPPELIN_PORT=8080
+# HOST=<host of zeppelin>
+# PORT=<port of zeppelin>
 ```
 
 ## How to run

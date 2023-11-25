@@ -1,5 +1,4 @@
 from core.conversation import Conversation
-from os import getenv
 
 from runtime.iruntime import IRuntime
 from core.utils import (
@@ -20,7 +19,7 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
             prompt: IPromptManager):
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
-    runtime.upload_file(getenv("DATASET_PATH"), dataset_file_name)
+    runtime.upload_file(dataset_path, dataset_file_name)
 
     load_dataset_code = "\n".join(
         ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
