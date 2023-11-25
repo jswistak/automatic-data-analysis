@@ -1,7 +1,4 @@
 from enum import Enum
-from typing import List
-
-import pandas as pd
 
 from models.models import Message
 

@@ -6,8 +6,6 @@ from core.utils import Colors, print_message
 from llm_api.iassistant import IAssistant
 from models.models import ConversationRolesInternalEnum, Message
 from prompt_manager.ipromptmanager import IPromptManager
-
-# from conversation import Conversation
 from runtime.iruntime import IRuntime
 
 # TODO: Rewrite the cell in case of error
@@ -20,6 +18,7 @@ def analyze(
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
 ):
+    """Conduct the automated tabular data analysis using LLM for a given dataset."""
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(dataset_path, dataset_file_name)

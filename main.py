@@ -33,6 +33,7 @@ def main(
     prompt: str,
     **kwargs,
 ):
+    """Program running the automated tabular data analysis using LLM."""
     runtime = runtimes[runtime](**kwargs.get("runtime_kwargs", {}))
     code_assistant = assistants[code_assistant](
         **kwargs.get("code_assistant_kwargs", {})

@@ -1,7 +1,6 @@
 import json
 from typing import List
 
-from core.utils import Colors, print_message
 from llm_api.iassistant import IAssistant
 from models.models import ConversationRolesInternalEnum, LLMType, Message
 from prompt_manager.ipromptmanager import IPromptManager
