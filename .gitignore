@@ -159,15 +159,13 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-latest_conversation_number.txt
+# Mac OS
 .DS_Store
-data.csv
-/reports/
 
-# Runtime data
-/conversations/*
-!/conversations/images/
-/conversations/images/*
+# Application files
+*.csv
+/reports/
+/conversations/
 
 # Office 365 temp files
 ~$*
