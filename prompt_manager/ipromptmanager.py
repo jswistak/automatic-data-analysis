@@ -9,7 +9,6 @@ class IPromptManager(ABC):
     It generates specific prompts for a given Agent (Code Generation or Analysis Suggestion and Interpretation) based on the current conversation and the LLM type.
     """
 
-    @abstractmethod
     def generate_conversation_context(
         self,
         conversation: list[Message],
@@ -27,4 +26,62 @@ class IPromptManager(ABC):
         Returns:
         List[dict]: The generated conversation context. To be used as input for the LLM.
         """
-        pass
+        match agent_type:
+            case ConversationRolesInternalEnum.CODE:
+                return self._generate_code_generation_prompt(conversation, llm_type)
+            case ConversationRolesInternalEnum.ANALYSIS:
+                return self._generate_analysis_suggestion_interpretation_prompt(
+                    conversation, llm_type
+                )
+            case _:
+                raise NotImplementedError(f"Agent type {agent_type} not implemented.")
+
+    def _change_roles(
+        self, conversation: list[Message], roles_dict: object, limit: int = 5
+    ) -> list[Message]:
+        """
+        Change the roles of the messages in the conversation, based on a dictionary.
+        """
+        llm_conversation = []
+        for message in conversation[:limit]:
+            msg = message.model_copy()
+            try:
+                msg.role = roles_dict[msg.role]
+            except KeyError:
+                raise NotImplementedError(
+                    f"Conversation role {message.role} not implemented."
+                )
+            llm_conversation.append(msg)
+        return llm_conversation
+
+    @abstractmethod
+    def _generate_code_generation_prompt(
+        self, conversation: list[Message], llm_type: LLMType
+    ) -> list[Message]:
+        """
+        Generate a prompt for a code generation agent based on the current conversation.
+
+        Parameters:
+        - conversation (List[dict]): The current conversation context.
+        - llm_type (LLMType): The type of Large Language Model.
+
+        Returns:
+        List[dict]: The generated conversation context. To be used as input for the LLM.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _generate_analysis_suggestion_interpretation_prompt(
+        self, conversation: list[Message], llm_type: LLMType
+    ) -> list[Message]:
+        """
+        Generate a prompt for a code generation agent based on the current conversation.
+
+        Parameters:
+        - conversation (List[dict]): The current conversation context.
+        - llm_type (LLMType): The type of Large Language Model.
+
+        Returns:
+        List[dict]: The generated conversation context. To be used as input for the LLM.
+        """
+        raise NotImplementedError
