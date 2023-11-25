@@ -30,8 +30,8 @@ class OpenAIAssistant(IAssistant):
         self.client = OpenAI(api_key=api_key)
 
     def generate_response(
-            self,
-            conversation: list[ChatCompletionMessageParam],
+        self,
+        conversation: list[ChatCompletionMessageParam],
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
@@ -50,7 +50,9 @@ class OpenAIAssistant(IAssistant):
 
         return _get_response(response)
 
-    def get_conversation_tokens(self, conversation: list[ChatCompletionMessageParam]) -> int:
+    def get_conversation_tokens(
+        self, conversation: list[ChatCompletionMessageParam]
+    ) -> int:
         """
         Get tokens from a conversation.
         """
