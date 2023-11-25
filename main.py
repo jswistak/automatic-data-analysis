@@ -111,7 +111,7 @@ if __name__ == "__main__":
         or prompt not in prompts.keys()
     ):
         raise ValueError(
-            f"Invalid argument provided. Please check the available options for each argument."
+            f"Environment variables are not set correctly. Please check the documentation."
         )
 
     runtime_kwargs = {}
