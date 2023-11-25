@@ -1,7 +1,7 @@
 from enum import Enum
+from typing import List
 
 import pandas as pd
-from typing import List
 
 from models.models import Message
 
@@ -41,4 +41,3 @@ def print_message(msg: Message, color: Colors) -> None:
         msg.content,
         f"{Colors.END.value}\n",
     )
-

@@ -1,15 +1,14 @@
-from dotenv import load_dotenv
+import argparse
 from os import getenv
 
-from llm_api.openai_assistant import OpenAIAssistant
-from prompt_manager.few_shot import FewShot, ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT
-
-
-from runtime.ssh_python_runtime import SSHPythonRuntime
-from runtime.notebook_runtime import NotebookRuntime
-import argparse
+from dotenv import load_dotenv
 
 from core.analysis import analyze
+from llm_api.openai_assistant import OpenAIAssistant
+from prompt_manager.few_shot import FewShot
+from prompt_manager.zero_shot import ZeroShot
+from runtime.notebook_runtime import NotebookRuntime
+from runtime.ssh_python_runtime import SSHPythonRuntime
 
 runtimes = {
     "python-ssh": SSHPythonRuntime,
@@ -22,6 +21,7 @@ assistants = {
 
 prompts = {
     "few-shot": FewShot,
+    "zero-shot": ZeroShot,
 }
 
 

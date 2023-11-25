@@ -1,22 +1,25 @@
-from core.conversation import Conversation
-
-from runtime.iruntime import IRuntime
-from core.utils import (
-    Colors, print_message,
-)
 import json
 from datetime import datetime
+
+from core.conversation import Conversation
+from core.utils import Colors, print_message
 from llm_api.iassistant import IAssistant
 from models.models import ConversationRolesInternalEnum, Message
 from prompt_manager.ipromptmanager import IPromptManager
+
 # from conversation import Conversation
 from runtime.iruntime import IRuntime
 
-
 # TODO: Rewrite the cell in case of error
 
-def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, analysis_assistant: IAssistant,
-            prompt: IPromptManager):
+
+def analyze(
+    dataset_path: str,
+    runtime: IRuntime,
+    code_assistant: IAssistant,
+    analysis_assistant: IAssistant,
+    prompt: IPromptManager,
+):
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(dataset_path, dataset_file_name)
@@ -31,19 +34,28 @@ def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, an
 
     runtime.execute_cell(cell_idx)
     initial_message = "Dataset is loaded into the runtime in the variable 'df'.'\nYou can try to print the first 5 rows of the dataset by executing the following code: ```python\ndf.head()```"
-    conv_list.append(Message(role=ConversationRolesInternalEnum.CODE, content=Conversation.format_code_assistant_message(initial_message,
-                                                                                                       runtime.get_cell_output_stream(
-                                                                                                           cell_idx))))
+    conv_list.append(
+        Message(
+            role=ConversationRolesInternalEnum.CODE,
+            content=Conversation.format_code_assistant_message(
+                initial_message, runtime.get_cell_output_stream(cell_idx)
+            ),
+        )
+    )
     print_message(conv_list[-1], Colors.RED)
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
 
-
     while "q" not in input(
-            f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
+        f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
     ):
         msg: Message = conv.perform_next_step()
-        print_message(msg, Colors.PURPLE if msg.role == ConversationRolesInternalEnum.CODE else Colors.BLUE)
+        print_message(
+            msg,
+            Colors.PURPLE
+            if msg.role == ConversationRolesInternalEnum.CODE
+            else Colors.BLUE,
+        )
 
     report_path = runtime.generate_report(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")

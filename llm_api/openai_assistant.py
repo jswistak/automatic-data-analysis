@@ -1,9 +1,8 @@
+import tiktoken
+from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 from llm_api.iassistant import IAssistant
-from openai import OpenAI
-import tiktoken
-
 
 MODEL_NAME = "gpt-3.5-turbo"
 enc = tiktoken.encoding_for_model(MODEL_NAME)
