@@ -1,8 +1,10 @@
-import paramiko
-from typing import Union, Tuple, List
+import os
 import re
 import uuid
-import os
+from typing import List, Tuple, Union
+
+import paramiko
+
 from runtime.iruntime import IRuntime
 
 
@@ -125,6 +127,7 @@ class SSHPythonRuntime(IRuntime):
         return markdown_path
 
     def _download_file(self, remote_path: str, local_path: str) -> None:
+        """Download file from remote path to local path."""
         sftp_client = self._ssh.open_sftp()
         sftp_client.get(remote_path, local_path)
         sftp_client.close()

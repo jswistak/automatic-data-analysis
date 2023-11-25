@@ -1,117 +1,150 @@
-from dotenv import load_dotenv
+import argparse
 from os import getenv
 
-from conversation import Conversation
+from dotenv import load_dotenv
+from typing import Union
+
+from core.analysis import analyze
 from llm_api.iassistant import IAssistant
 from llm_api.openai_assistant import OpenAIAssistant
-from prompt_manager.few_shot import FewShot
 from prompt_manager.ipromptmanager import IPromptManager
-# from conversation import Conversation
+from prompt_manager.few_shot import FewShot
+from prompt_manager.zero_shot import ZeroShot
 from runtime.iruntime import IRuntime
-from utils import (
-    Colors, print_message,
-)
-from runtime.ssh_python_runtime import SSHPythonRuntime
 from runtime.notebook_runtime import NotebookRuntime
-from datetime import datetime
-from models.models import ConversationRolesInternalEnum, Message, LLMType
-import argparse
-import json
+from runtime.ssh_python_runtime import SSHPythonRuntime
 
-# TODO: Rewrite the cell in case of error
+runtimes: dict[str, IRuntime] = {
+    "python-ssh": SSHPythonRuntime,
+    "jupyter-notebook": NotebookRuntime,
+}
 
-def analyze(dataset_path: str, runtime: IRuntime, code_assistant: IAssistant, analysis_assistant: IAssistant,
-            prompt: IPromptManager):
-    # region: Loading dataset into runtime environment
-    conv_list: list[Message] = []
-    dataset_file_name = dataset_path.split("/")[-1]
-    runtime.upload_file(getenv("DATASET_PATH"), dataset_file_name)
+assistants: dict[str, IAssistant] = {
+    "openai": OpenAIAssistant,
+}
 
-    load_dataset_code = "\n".join(
-        ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
+prompts: dict[str, IPromptManager] = {
+    "few-shot": FewShot,
+    "zero-shot": ZeroShot,
+}
+
+def main(
+    dataset_path: str,
+    runtime_name: str,
+    code_assistant_name: str,
+    analysis_assistant_name: str,
+    prompt_name: str,
+    **kwargs,
+):
+    """Program running the automated tabular data analysis using LLM."""
+
+    runtime: IRuntime = runtimes.get(runtime_name)(**kwargs.get("runtime_kwargs", {}))
+    code_assistant: IAssistant = assistants[code_assistant_name](
+        **kwargs.get("code_assistant_kwargs", {})
     )
-    cell_idx = runtime.add_code(load_dataset_code)
-    runtime.execute_cell(cell_idx)
-
-    cell_idx = runtime.add_code("df.head()")
-
-    runtime.execute_cell(cell_idx)
-    initial_message = "Dataset is loaded into the runtime in the variable 'df'.'\nYou can try to print the first 5 rows of the dataset by executing the following code: ```python\ndf.head()```"
-    conv_list.append(Message(role=ConversationRolesInternalEnum.CODE, content=Conversation.format_code_assistant_message(initial_message,
-                                                                                                       runtime.get_cell_output_stream(
-                                                                                                           cell_idx))))
-    print_message(conv_list[-1], Colors.RED)
-
-    conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
-
-
-    while "q" not in input(
-            f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
-    ):
-        msg: Message = conv.perform_next_step()
-        print_message(msg, Colors.PURPLE if msg.role == ConversationRolesInternalEnum.CODE else Colors.BLUE)
-
-    report_path = runtime.generate_report(
-        "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    analysis_assistant: IAssistant = assistants[analysis_assistant_name](
+        **kwargs.get("analysis_assistant_kwargs", {})
     )
-    print(f"Report has been saved to {report_path}")
+    prompt_manager: IPromptManager = prompts[prompt_name](**kwargs.get("prompt_kwargs", {}))
+    
+    if not isinstance(runtime, IRuntime) or not isinstance(code_assistant, IAssistant) or not isinstance(analysis_assistant, IAssistant) or not isinstance(prompt_manager, IPromptManager):
+        raise ValueError(
+            f"Error while initializing the modules."
+        )
 
-    conv_json = conv.get_conversation_json()
-    conv_path = f"conversations/conversation-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
-    with open(conv_path, "w") as f:
-        json.dump(conv_json, f, indent=4)
-    print(f"Conversation has been saved to {conv_path}")
+    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager)
+
+
+def get_value(env_var: str, args: argparse.Namespace) -> str:
+    """
+    Set value of variable to the value of the argument if set, otherwise to the value of the environment variable.
+    If neither is set, raise an error.
+    """
+
+    env_var_name = env_var.upper()
+
+    if getattr(args, env_var):
+        return getattr(args, env_var)
+    elif getenv(env_var_name):
+        return getenv(env_var_name)
+    else:
+        raise ValueError(f"{env_var} is required but not provided")
 
 
 if __name__ == "__main__":
+    load_dotenv()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-dataset", type=str)
-    parser.add_argument(
-        "-runtime",
-        type=str,
-        default="jupyter-notebook",
-        choices=["python-ssh", "jupyter-notebook", "apache-zeppelin"],
+    parser = argparse.ArgumentParser(
+        description="Run the automated tabular data analysis using LLM."
     )
-    load_dotenv()
-    args = parser.parse_args()  # Arguments have precedence over environment variables
+    parser.add_argument(
+        "--dataset_path",
+        type=str,
+        help="Path to the dataset file (CSV)",
+        metavar="PATH",
+    )
+    parser.add_argument(
+        "--runtime",
+        type=str,
+        choices=runtimes.keys(),
+        help=f"Runtime type to be used for running the code analysis ({', '.join(runtimes.keys())})",
+    )
+    parser.add_argument(
+        "--code_assistant",
+        type=str,
+        choices=assistants.keys(),
+        help=f"Code assistant type to be used for code completion ({', '.join(assistants.keys())})",
+    )
+    parser.add_argument(
+        "--analysis_assistant",
+        type=str,
+        choices=assistants.keys(),
+        help=f"Analysis assistant type to be used for analysis ({', '.join(assistants.keys())})",
+    )
+    parser.add_argument(
+        "--prompt",
+        type=str,
+        choices=prompts.keys(),
+        help=f"Prompt type to be used for generating prompts ({', '.join(prompts.keys())})",
+    )
+    args = parser.parse_args()
 
-    if args.dataset:
-        dataset_path = args.dataset
-    else:
-        dataset_path = getenv("DATASET_PATH")
-    if not dataset_path:
-        raise ValueError("Dataset path is required but not provided")
+    dataset_path = get_value("dataset_path", args)
+    runtime = get_value("runtime", args)
+    code_assistant = get_value("code_assistant", args)
+    analysis_assistant = get_value("analysis_assistant", args)
+    prompt = get_value("prompt", args)
 
-    if args.runtime:
-        runtime_type = args.runtime
-    else:
-        runtime_type = getenv("RUNTIME_TYPE")
-    if not runtime_type:
-        raise ValueError("Runtime type is required but not provided")
+    if (
+        runtime not in runtimes.keys()
+        or code_assistant not in assistants.keys()
+        or analysis_assistant not in assistants.keys()
+        or prompt not in prompts.keys()
+    ):
+        raise ValueError(
+            f"Environment variables are not set correctly. Please check the documentation."
+        )
 
-    match runtime_type:
-        case "python-ssh":
-            runtime = SSHPythonRuntime(
-                host=getenv("SSH_HOST"),
-                port=getenv("SSH_PORT"),
-                username=getenv("SSH_USERNAME"),
-                password=getenv("SSH_PASSWORD"),
-            )
-        case "jupyter-notebook":
-            runtime = NotebookRuntime(
-                host=getenv("JUPYTER_HOST"),
-                port=getenv("JUPYTER_PORT"),
-                token=getenv("JUPYTER_TOKEN"),
-            )
-        case "apache-zeppelin":
-            raise NotImplementedError("Apache Zeppelin is not supported yet")
-        case _:
-            raise ValueError(f"Runtime type {runtime_type} is not supported")
+    runtime_kwargs = {}
+    runtime_kwargs["host"] = getenv("HOST")
+    runtime_kwargs["port"] = getenv("PORT")
+    if runtime == "python-ssh":
+        runtime_kwargs["username"] = getenv("USERNAME")
+        runtime_kwargs["password"] = getenv("PASSWORD")
+    elif runtime == "jupyter-notebook":
+        runtime_kwargs["token"] = getenv("TOKEN")
 
-    # WIP
-    load_dotenv()
-    code_assistant = OpenAIAssistant(getenv("OPENAI_API_KEY"))
-    analysis_assistant = OpenAIAssistant(getenv("OPENAI_API_KEY"))
-    prompt = FewShot()
-    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt)
+    code_assistant_kwargs = {}
+    if code_assistant == "openai":
+        code_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+
+    analysis_assistant_kwargs = {}
+    if analysis_assistant == "openai":
+        analysis_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+
+    kwargs = {
+        "runtime_kwargs": runtime_kwargs,
+        "code_assistant_kwargs": code_assistant_kwargs,
+        "analysis_assistant_kwargs": analysis_assistant_kwargs,
+    }
+    main(dataset_path, runtime, code_assistant, analysis_assistant, prompt, **kwargs)

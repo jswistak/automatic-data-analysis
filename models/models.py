@@ -1,4 +1,5 @@
 from enum import Enum
+
 from pydantic import BaseModel
 
 
@@ -15,6 +16,7 @@ class ConversationRolesInternalEnum(str, Enum):
 
 
 class Message(BaseModel):
+    """Messages are the basic building blocks of a conversation."""
     role: ConversationRolesEnum | ConversationRolesInternalEnum
     content: str
 

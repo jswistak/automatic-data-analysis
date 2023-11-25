@@ -1,8 +1,8 @@
 from models.models import (
-    Message,
     ConversationRolesEnum,
     ConversationRolesInternalEnum,
     LLMType,
+    Message,
 )
 from prompt_manager.ipromptmanager import IPromptManager
 

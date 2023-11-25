@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from models.models import LLMType, ConversationRolesInternalEnum, Message
+
+from models.models import ConversationRolesInternalEnum, LLMType, Message
 
 
 class IPromptManager(ABC):

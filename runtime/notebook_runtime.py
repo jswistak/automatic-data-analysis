@@ -1,12 +1,14 @@
-import requests
-import os
-import nbformat
-import nbconvert
-import uuid
 import datetime
 import json
+import os
+import uuid
 from typing import Union
+
+import nbconvert
+import nbformat
+import requests
 from websocket import create_connection
+
 from runtime.iruntime import IRuntime
 
 
@@ -169,6 +171,7 @@ class NotebookRuntime(IRuntime):
         return cell
 
     def _create_ws_message(self, msg_type: str, content: dict) -> dict:
+        """Creates a message for the Jupyter Server via WebSocket."""
         header = {
             "msg_id": uuid.uuid4().hex,  # Must be unique per message
             "username": self._ws_username,  # Useful in collaborative settings where multiple users may be interacting with the same kernel simultaneously, so that frontends can label the various messages in a meaningful way.
