@@ -71,7 +71,7 @@ class FewShot(IPromptManager):
         }
         llm_conversation = [
             Message(role=ConversationRolesEnum.SYSTEM, content=CODE_GENERATION_PROMPT),
-            *super()._change_roles(conversation, roles_dict)
+            *self._change_roles(conversation, roles_dict)
         ]
 
         return llm_conversation
@@ -83,7 +83,7 @@ class FewShot(IPromptManager):
         }
         llm_conversation = [
             Message(role=ConversationRolesEnum.SYSTEM, content=ANALYSIS_SUGGESTION_INTERPRETATION_PROMPT),
-            *super()._change_roles(conversation, roles_dict)
+            *self._change_roles(conversation, roles_dict)
 
         ]
 
