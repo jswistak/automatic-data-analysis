@@ -5,18 +5,18 @@ services:
       context: .
       dockerfile: runtime/python-ssh.Dockerfile
       args:
-        SSH_USERNAME: ${SSH_USERNAME}
-        SSH_PASSWORD: ${SSH_PASSWORD}
+        SSH_USERNAME: ${USERNAME}
+        SSH_PASSWORD: ${PASSWORD}
     image: python-execution-runtime
     ports:
-      - "${SSH_PORT}:22"
+      - "${PORT}:22"
 
   jupyter-notebook-runtime:
     profiles: ["jupyter-notebook"]
     image: jupyter/scipy-notebook:python-3.10
     ports:
-      - "${JUPYTER_PORT}:8888"
-    command: ["start-notebook.sh", "--NotebookApp.token='${JUPYTER_TOKEN}'"]
+      - "${JPORT}:8888"
+    command: ["start-notebook.sh", "--NotebookApp.token='${TOKEN}'"]
 
   apache-zeppelin-runtime:
     profiles: ["apache-zeppelin"]
@@ -24,4 +24,4 @@ services:
       context: .
       dockerfile: runtime/apache-zeppelin.Dockerfile
     ports:
-      - "${ZEPPELIN_PORT}:8080"
+      - "${PORT}:8080"
