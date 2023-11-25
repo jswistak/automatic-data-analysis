@@ -65,6 +65,16 @@ class FewShot(IPromptManager):
         pass
 
     def _generate_code_generation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
+        """
+        Generate a prompt for a code generation agent based on the current conversation.
+
+        Parameters:
+        - conversation (List[dict]): The current conversation context.
+        - llm_type (LLMType): The type of Large Language Model.
+
+        Returns:
+        List[dict]: The generated conversation context. To be used as input for the LLM.
+        """
         roles_dict = {
             ConversationRolesInternalEnum.ANALYSIS: ConversationRolesEnum.USER,
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.ASSISTANT,
@@ -77,6 +87,16 @@ class FewShot(IPromptManager):
         return llm_conversation
 
     def _generate_analysis_suggestion_interpretation_prompt(self, conversation: list[Message], llm_type: LLMType) -> list[Message]:
+        """
+        Generate a prompt for a code generation agent based on the current conversation.
+
+        Parameters:
+        - conversation (List[dict]): The current conversation context.
+        - llm_type (LLMType): The type of Large Language Model.
+
+        Returns:
+        List[dict]: The generated conversation context. To be used as input for the LLM.
+        """
         roles_dict = {
             ConversationRolesInternalEnum.ANALYSIS: ConversationRolesEnum.ASSISTANT,
             ConversationRolesInternalEnum.CODE: ConversationRolesEnum.USER,
