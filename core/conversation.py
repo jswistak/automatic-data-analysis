@@ -5,7 +5,7 @@ from models.models import Message, ConversationRolesInternalEnum, LLMType
 from runtime.iruntime import IRuntime
 from llm_api.iassistant import IAssistant
 from prompt_manager.ipromptmanager import IPromptManager
-from utils import print_message, Colors
+from core.utils import print_message, Colors
 
 
 class Conversation:
