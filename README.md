@@ -6,6 +6,8 @@
 
 ## Prerequisites
 
+**Python version: 3.10**
+
 Whole solution (both app and execution runtime) relies on configuration file (for local use). It should be named `.env` and placed in the root directory. Its content should be as follows:
 
 ```
