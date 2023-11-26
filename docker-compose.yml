@@ -15,7 +15,7 @@ services:
     profiles: ["jupyter-notebook"]
     image: jupyter/scipy-notebook:python-3.10
     ports:
-      - "${JPORT}:8888"
+      - "${PORT}:8888"
     command: ["start-notebook.sh", "--NotebookApp.token='${TOKEN}'"]
 
   apache-zeppelin-runtime:
