@@ -28,6 +28,7 @@ prompts: dict[str, IPromptManager] = {
     "zero-shot": ZeroShot,
 }
 
+
 def main(
     dataset_path: str,
     runtime_name: str,
@@ -35,8 +36,11 @@ def main(
     analysis_assistant_name: str,
     prompt_name: str,
     **kwargs,
-):
-    """Program running the automated tabular data analysis using LLM."""
+) -> str:
+    """
+    Program running the automated tabular data analysis using LLM.
+    Returns the output of the analysis.
+    """
 
     runtime: IRuntime = runtimes.get(runtime_name)(**kwargs.get("runtime_kwargs", {}))
     code_assistant: IAssistant = assistants[code_assistant_name](
@@ -45,14 +49,21 @@ def main(
     analysis_assistant: IAssistant = assistants[analysis_assistant_name](
         **kwargs.get("analysis_assistant_kwargs", {})
     )
-    prompt_manager: IPromptManager = prompts[prompt_name](**kwargs.get("prompt_kwargs", {}))
-    
-    if not isinstance(runtime, IRuntime) or not isinstance(code_assistant, IAssistant) or not isinstance(analysis_assistant, IAssistant) or not isinstance(prompt_manager, IPromptManager):
-        raise ValueError(
-            f"Error while initializing the modules."
-        )
+    prompt_manager: IPromptManager = prompts[prompt_name](
+        **kwargs.get("prompt_kwargs", {})
+    )
 
-    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager)
+    if (
+        not isinstance(runtime, IRuntime)
+        or not isinstance(code_assistant, IAssistant)
+        or not isinstance(analysis_assistant, IAssistant)
+        or not isinstance(prompt_manager, IPromptManager)
+    ):
+        raise ValueError(f"Error while initializing the modules.")
+
+    return analyze(
+        dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager
+    )
 
 
 def get_value(env_var: str, args: argparse.Namespace) -> str:

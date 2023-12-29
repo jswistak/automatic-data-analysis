@@ -17,8 +17,11 @@ def analyze(
     code_assistant: IAssistant,
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
-):
-    """Conduct the automated tabular data analysis using LLM for a given dataset."""
+) -> str:
+    """
+    Conduct the automated tabular data analysis using LLM for a given dataset.
+    Returns the path to the generated report.
+    """
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(dataset_path, dataset_file_name)
@@ -66,3 +69,4 @@ def analyze(
     with open(conv_path, "w") as f:
         json.dump(conv_json, f, indent=4)
     print(f"Conversation has been saved to {conv_path}")
+    return report_path
