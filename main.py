@@ -60,6 +60,7 @@ def main(
     code_assistant_name: str,
     analysis_assistant_name: str,
     prompt_name: str,
+    analysis_message_limit: Union[int, None] = None,
     **kwargs,
 ) -> str:
     """
@@ -90,7 +91,12 @@ def main(
         raise ValueError(f"Error while initializing the modules.")
 
     return analyze(
-        dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager
+        dataset_path,
+        runtime,
+        code_assistant,
+        analysis_assistant,
+        prompt_manager,
+        analysis_message_limit,
     )
 
 

@@ -23,10 +23,6 @@ uploaded_file = st.file_uploader("Upload CSV", type="csv")
 
 if st.button("Analyze"):
     if uploaded_file is not None and selected_technique and api_token:
-        # data = pd.read_csv(uploaded_file)
-        # pdf = create_pdf(data, selected_technique, api_token)
-        # Here implement our function TODO
-
         try:
             with open(os.path.join(DATA_PATH, uploaded_file.name), "wb") as f:
                 f.write(uploaded_file.getbuffer())
@@ -38,8 +34,6 @@ if st.button("Analyze"):
                 kwargs = get_runtime_kwargs(runtime, code_assistant, analysis_assistant)
                 # kwargs["analysis_assistant"]["api_key"] = assistant_api_key
                 # kwargs["code_assistant_kwargs"]["api_key"] = assistant_api_key
-                print(kwargs)
-                print("\n")
 
                 output_pdf_path = main(
                     dataset_path,
@@ -47,6 +41,7 @@ if st.button("Analyze"):
                     code_assistant,
                     analysis_assistant,
                     prompt_name,
+                    # analysis_message_limit=5,
                     **kwargs,
                 )
 

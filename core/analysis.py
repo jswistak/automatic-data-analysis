@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Union
 
 from core.conversation import Conversation
 from core.utils import Colors, print_message
@@ -17,6 +18,7 @@ def analyze(
     code_assistant: IAssistant,
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
+    analysis_message_limit: Union[int, None] = None,
 ) -> str:
     """
     Conduct the automated tabular data analysis using LLM for a given dataset.
@@ -48,9 +50,14 @@ def analyze(
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
 
-    while "q" not in input(
-        f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
-    ):
+    while analysis_message_limit is None or analysis_message_limit > 0:
+        if analysis_message_limit is not None:
+            analysis_message_limit -= 1
+        elif "q" in input(
+            f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
+        ):
+            break
+
         msg: Message = conv.perform_next_step()
         print_message(
             msg,
