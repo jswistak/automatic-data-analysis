@@ -56,21 +56,22 @@ if st.button("Analyze"):
 
                 if os.path.exists(output_pdf_path):
                     with open(output_pdf_path, "rb") as file:
+                        file_content = file.read()
                         btn = st.download_button(
                             label="Download PDF",
-                            data=file,
+                            data=file_content,
                             file_name="downloaded_file.pdf",
                             mime="application/octet-stream",
                         )
-                        images = convert_from_bytes(file.getvalue())
+                        images = convert_from_bytes(file_content)
                         for image in images:
                             st.image(image, use_column_width=True)
                 else:
                     st.write("Output file not found.")
 
-        # except Exception as e:
-        #     print(e)
-        #     st.error("Something went wrong!")
+        except Exception as e:
+            print(e)
+            st.error("Something went wrong!")
 
         finally:
             os.remove(os.path.join(DATA_PATH, uploaded_file.name))
