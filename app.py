@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-DATA_PATH = ""
+DATA_PATH = "data/"
 # Streamlit UI
 st.title("Automatic Tabular Data analysis")
 
