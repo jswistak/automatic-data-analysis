@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import streamlit as st
 import pandas as pd
@@ -61,9 +62,9 @@ if (
                 code_assistants[code_assistant],
                 analysis_assistants[analysis_assistant],
             )
-            # if llm_token:
-            #     kwargs["analysis_assistant"]["api_key"] = llm_token
-            #     kwargs["code_assistant_kwargs"]["api_key"] = llm_token
+            if llm_token:
+                kwargs["analysis_assistant_kwargs"]["api_key"] = llm_token
+                kwargs["code_assistant_kwargs"]["api_key"] = llm_token
             output_pdf_path = main(
                 dataset_path,
                 runtime,
@@ -84,7 +85,7 @@ if (
                     btn = st.download_button(
                         label="Download PDF",
                         data=file_content,
-                        file_name="downloaded_file.pdf",
+                        file_name=f"downloaded_file{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.pdf",
                         mime="application/octet-stream",
                     )
                     images = convert_from_bytes(file_content)
@@ -94,8 +95,7 @@ if (
                 st.write("Output file not found.")
 
     except Exception as e:
-        print(e)
-        st.error("Something went wrong!")
+        st.error("An error occurred while analyzing the data: " + str(e))
 
     finally:
         # TODO temporarily save the input file

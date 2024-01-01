@@ -67,9 +67,9 @@ def main(
     Program running the automated tabular data analysis using LLM.
     Returns the output of the analysis.
     """
-    print(
-        f"Running main with args: {dataset_path}, {runtime_name}, {code_assistant_name}, {analysis_assistant_name}, {prompt_name}, {kwargs}"
-    )
+    # print(
+    #     f"Running main with args: {dataset_path}, {runtime_name}, {code_assistant_name}, {analysis_assistant_name}, {prompt_name}, {kwargs}"
+    # )
 
     runtime: IRuntime = runtimes.get(runtime_name)(**kwargs.get("runtime_kwargs", {}))
     code_assistant: IAssistant = assistants[code_assistant_name](
