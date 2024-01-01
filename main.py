@@ -30,6 +30,10 @@ prompts: dict[str, IPromptManager] = {
 
 
 def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
+    """
+    Function to get the runtime kwargs based on the runtime and assistants.
+    It reads the environment variables and returns the kwargs with the configured values.
+    """
     runtime_kwargs = {}
     runtime_kwargs["host"] = getenv("HOST")
     runtime_kwargs["port"] = getenv("PORT")
