@@ -14,3 +14,4 @@ pdoc3==0.10.0
 tiktoken==0.5.1
 streamlit==1.29.0
 reportlab==4.0.8
+pdf2image==1.16.3
