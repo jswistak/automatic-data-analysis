@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Union
 
 from core.conversation import Conversation
 from core.utils import Colors, print_message
@@ -17,8 +18,12 @@ def analyze(
     code_assistant: IAssistant,
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
-):
-    """Conduct the automated tabular data analysis using LLM for a given dataset."""
+    analysis_message_limit: Union[int, None] = None,
+) -> str:
+    """
+    Conduct the automated tabular data analysis using LLM for a given dataset.
+    Returns the path to the generated report.
+    """
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(dataset_path, dataset_file_name)
@@ -45,9 +50,14 @@ def analyze(
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
 
-    while "q" not in input(
-        f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
-    ):
+    while analysis_message_limit is None or analysis_message_limit > 0:
+        if analysis_message_limit is not None:
+            analysis_message_limit -= 1
+        elif "q" in input(
+            f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
+        ):
+            break
+
         msg: Message = conv.perform_next_step()
         print_message(
             msg,
@@ -66,3 +76,4 @@ def analyze(
     with open(conv_path, "w") as f:
         json.dump(conv_json, f, indent=4)
     print(f"Conversation has been saved to {conv_path}")
+    return report_path

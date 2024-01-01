@@ -28,15 +28,48 @@ prompts: dict[str, IPromptManager] = {
     "zero-shot": ZeroShot,
 }
 
+
+def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
+    runtime_kwargs = {}
+    runtime_kwargs["host"] = getenv("HOST")
+    runtime_kwargs["port"] = getenv("PORT")
+    if runtime == "python-ssh":
+        runtime_kwargs["username"] = getenv("USERNAME")
+        runtime_kwargs["password"] = getenv("PASSWORD")
+    elif runtime == "jupyter-notebook":
+        runtime_kwargs["token"] = getenv("TOKEN")
+
+    code_assistant_kwargs = {}
+    if code_assistant == "openai":
+        code_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+
+    analysis_assistant_kwargs = {}
+    if analysis_assistant == "openai":
+        analysis_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+
+    return {
+        "runtime_kwargs": runtime_kwargs,
+        "code_assistant_kwargs": code_assistant_kwargs,
+        "analysis_assistant_kwargs": analysis_assistant_kwargs,
+    }
+
+
 def main(
     dataset_path: str,
     runtime_name: str,
     code_assistant_name: str,
     analysis_assistant_name: str,
     prompt_name: str,
+    analysis_message_limit: Union[int, None] = None,
     **kwargs,
-):
-    """Program running the automated tabular data analysis using LLM."""
+) -> str:
+    """
+    Program running the automated tabular data analysis using LLM.
+    Returns the output of the analysis.
+    """
+    # print(
+    #     f"Running main with args: {dataset_path}, {runtime_name}, {code_assistant_name}, {analysis_assistant_name}, {prompt_name}, {kwargs}"
+    # )
 
     runtime: IRuntime = runtimes.get(runtime_name)(**kwargs.get("runtime_kwargs", {}))
     code_assistant: IAssistant = assistants[code_assistant_name](
@@ -45,14 +78,26 @@ def main(
     analysis_assistant: IAssistant = assistants[analysis_assistant_name](
         **kwargs.get("analysis_assistant_kwargs", {})
     )
-    prompt_manager: IPromptManager = prompts[prompt_name](**kwargs.get("prompt_kwargs", {}))
-    
-    if not isinstance(runtime, IRuntime) or not isinstance(code_assistant, IAssistant) or not isinstance(analysis_assistant, IAssistant) or not isinstance(prompt_manager, IPromptManager):
-        raise ValueError(
-            f"Error while initializing the modules."
-        )
+    prompt_manager: IPromptManager = prompts[prompt_name](
+        **kwargs.get("prompt_kwargs", {})
+    )
 
-    analyze(dataset_path, runtime, code_assistant, analysis_assistant, prompt_manager)
+    if (
+        not isinstance(runtime, IRuntime)
+        or not isinstance(code_assistant, IAssistant)
+        or not isinstance(analysis_assistant, IAssistant)
+        or not isinstance(prompt_manager, IPromptManager)
+    ):
+        raise ValueError(f"Error while initializing the modules.")
+
+    return analyze(
+        dataset_path,
+        runtime,
+        code_assistant,
+        analysis_assistant,
+        prompt_manager,
+        analysis_message_limit,
+    )
 
 
 def get_value(env_var: str, args: argparse.Namespace) -> str:
@@ -125,26 +170,5 @@ if __name__ == "__main__":
             f"Environment variables are not set correctly. Please check the documentation."
         )
 
-    runtime_kwargs = {}
-    runtime_kwargs["host"] = getenv("HOST")
-    runtime_kwargs["port"] = getenv("PORT")
-    if runtime == "python-ssh":
-        runtime_kwargs["username"] = getenv("USERNAME")
-        runtime_kwargs["password"] = getenv("PASSWORD")
-    elif runtime == "jupyter-notebook":
-        runtime_kwargs["token"] = getenv("TOKEN")
-
-    code_assistant_kwargs = {}
-    if code_assistant == "openai":
-        code_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
-
-    analysis_assistant_kwargs = {}
-    if analysis_assistant == "openai":
-        analysis_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
-
-    kwargs = {
-        "runtime_kwargs": runtime_kwargs,
-        "code_assistant_kwargs": code_assistant_kwargs,
-        "analysis_assistant_kwargs": analysis_assistant_kwargs,
-    }
+    kwargs = get_runtime_kwargs(runtime, code_assistant, analysis_assistant)
     main(dataset_path, runtime, code_assistant, analysis_assistant, prompt, **kwargs)
