@@ -36,7 +36,7 @@ def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
     """
     runtime_kwargs = {}
     runtime_kwargs["host"] = getenv("HOST")
-    runtime_kwargs["port"] = getenv("PORT")
+    runtime_kwargs["port"] = getenv("RUNTIME_PORT")
     if runtime == "python-ssh":
         runtime_kwargs["username"] = getenv("USERNAME")
         runtime_kwargs["password"] = getenv("PASSWORD")
