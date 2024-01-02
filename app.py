@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import streamlit as st
 import pandas as pd
+from tempfile import NamedTemporaryFile
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from pdf2image import convert_from_bytes
@@ -10,7 +11,6 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-DATA_PATH = "data/"
 # Streamlit UI
 st.title("Automatic Tabular Data analysis")
 
@@ -51,9 +51,11 @@ if (
     and st.button("Analyze")
 ):
     try:
-        with open(os.path.join(DATA_PATH, uploaded_file.name), "wb") as f:
-            f.write(uploaded_file.getbuffer())
-            dataset_path = os.path.join(DATA_PATH, uploaded_file.name)
+        # TODO: Save the uploaded file to a temporary location
+
+        with NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(uploaded_file.read())
+            dataset_path = tmp.name
 
             runtime = "jupyter-notebook"
 
