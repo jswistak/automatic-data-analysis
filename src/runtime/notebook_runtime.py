@@ -23,7 +23,7 @@ class NotebookRuntime(IRuntime):
     _ws_jupyter_message_version = "5.3"
 
     def __init__(self, token: str, host: str = "127.0.0.1", port: int = 8888):
-        self._base_url = f"http://{host}:{port}/api"
+        self._base_url = f"https://{host}:{port}/api"
         self._session = requests.Session()
         self._session.headers.update(
             {
