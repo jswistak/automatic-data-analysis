@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 # Streamlit UI
-st.title("Automatic Tabular Data analysis")
+st.title("Automated Tabular Data analysis")
 
 # Define your options for the prompting technique here
 prompting_techniques = {"Zero Shot": "zero-shot"}

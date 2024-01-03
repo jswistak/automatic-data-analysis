@@ -35,13 +35,14 @@ def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
     It reads the environment variables and returns the kwargs with the configured values.
     """
     runtime_kwargs = {}
-    runtime_kwargs["host"] = getenv("HOST")
-    runtime_kwargs["port"] = getenv("PORT")
+    runtime_kwargs["host"] = getenv("RUNTIME_HOST")
+    runtime_kwargs["port"] = getenv("RUNTIME_PORT")
     if runtime == "python-ssh":
         runtime_kwargs["username"] = getenv("USERNAME")
         runtime_kwargs["password"] = getenv("PASSWORD")
     elif runtime == "jupyter-notebook":
         runtime_kwargs["token"] = getenv("TOKEN")
+        runtime_kwargs["use_https"] = getenv("RUNTIME_USE_HTTPS") == "true"
 
     code_assistant_kwargs = {}
     if code_assistant == "openai":

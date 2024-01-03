@@ -1,4 +1,14 @@
 services:
+  core:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: automated-tabular-data-analysis
+    ports:
+      - "${PORT}:8501"
+    env_file:
+      - .env
+      
   python-ssh-runtime:
     profiles: ["python-ssh"]
     build:
@@ -9,13 +19,13 @@ services:
         SSH_PASSWORD: ${PASSWORD}
     image: python-execution-runtime
     ports:
-      - "${PORT}:22"
+      - "${RUNTIME_PORT}:22"
 
   jupyter-notebook-runtime:
     profiles: ["jupyter-notebook"]
     image: jupyter/scipy-notebook:python-3.10
     ports:
-      - "${PORT}:8888"
+      - "${RUNTIME_PORT}:8888"
     command: ["start-notebook.sh", "--NotebookApp.token='${TOKEN}'"]
 
   apache-zeppelin-runtime:
@@ -24,4 +34,4 @@ services:
       context: .
       dockerfile: runtime/apache-zeppelin.Dockerfile
     ports:
-      - "${PORT}:8080"
+      - "${RUNTIME_PORT}:8080"

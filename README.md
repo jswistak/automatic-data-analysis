@@ -17,21 +17,23 @@ RUNTIME=<selected runtime> # apache-zeppelin, python-ssh, jupyter-notebook
 CODE_ASSISTANT=<selected LLM> # openai
 ANALYSIS_ASSISTANT=<selected LLM> # openai
 PROMPT=<selected prompting strategy> # few-shot
+PORT=<port to run web app on>
 
 # python-ssh-runtime
-# HOST=<host of python-ssh>
-# PORT=<port of python-ssh>
+# RUNTIME_HOST=<host of python-ssh>
+# RUNTIME_PORT=<port of python-ssh>
 # USERNAME=<username to access python-ssh>
 # PASSWORD=<password to access python-ssh>
 
 # jupyter-notebook-runtime
-HOST=<host of jupyter>
-PORT=<port of jupyter>
+RUNTIME_HOST=<host of jupyter>
+RUNTIME_PORT=<port of jupyter>
+RUNTIME_USE_HTTPS=<true/false>
 TOKEN=<token to access jupyter>
 
 # apache-zeppelin-runtime
-# HOST=<host of zeppelin>
-# PORT=<port of zeppelin>
+# RUNTIME_HOST=<host of zeppelin>
+# RUNTIME_PORT=<port of zeppelin>
 ```
 
 ## How to run
@@ -40,7 +42,7 @@ TOKEN=<token to access jupyter>
 1. Install requirements.txt (pip install -r requirements.txt).
 2. Set OPENAI_API_KEY environment variable to your OpenAI API key.
 3. Move/copy selected dataset in CSV format to the project directory. It should be named `data.csv`.
-4. Run `python main.py` and follow the prompts.
+4. Run `python src/main.py` and follow the prompts.
 
 ## Execution runtime
 
