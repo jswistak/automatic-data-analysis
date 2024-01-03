@@ -5,7 +5,9 @@ services:
       dockerfile: ./Dockerfile
     image: automated-tabular-data-analysis
     ports:
-      - "${PORT}:8051"
+      - "${PORT}:8501"
+    env_file:
+      - .env
       
   python-ssh-runtime:
     profiles: ["python-ssh"]

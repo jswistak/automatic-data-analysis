@@ -20,18 +20,18 @@ PROMPT=<selected prompting strategy> # few-shot
 PORT=<port to run web app on>
 
 # python-ssh-runtime
-# HOST=<host of python-ssh>
+# RUNTIME_HOST=<host of python-ssh>
 # RUNTIME_PORT=<port of python-ssh>
 # USERNAME=<username to access python-ssh>
 # PASSWORD=<password to access python-ssh>
 
 # jupyter-notebook-runtime
-HOST=<host of jupyter>
+RUNTIME_HOST=<host of jupyter>
 RUNTIME_PORT=<port of jupyter>
 TOKEN=<token to access jupyter>
 
 # apache-zeppelin-runtime
-# HOST=<host of zeppelin>
+# RUNTIME_HOST=<host of zeppelin>
 # RUNTIME_PORT=<port of zeppelin>
 ```
 
