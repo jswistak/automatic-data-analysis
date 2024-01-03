@@ -22,8 +22,11 @@ class NotebookRuntime(IRuntime):
     _ws_username = "username"
     _ws_jupyter_message_version = "5.3"
 
-    def __init__(self, token: str, host: str = "127.0.0.1", port: int = 8888):
-        self._base_url = f"https://{host}:{port}/api"
+    def __init__(self, token: str, host: str = "127.0.0.1", port: int = 8888, use_https: bool = True):
+        if use_https:
+            self._base_url = f"https://{host}:{port}/api"
+        else:
+            self._base_url = f"http://{host}:{port}/api"
         self._session = requests.Session()
         self._session.headers.update(
             {
@@ -37,10 +40,12 @@ class NotebookRuntime(IRuntime):
         self._kernel_id = self._start_kernel()
         self._ws_session = uuid.uuid4().hex
 
-        self._ws = create_connection(
-            f"ws://{host}:{port}/api/kernels/{self._kernel_id}/channels",
-            header={"Authorization": f"token {token}"},
-        )
+        if use_https:
+            ws_url = f"wss://{host}:{port}/api/kernels/{self._kernel_id}/channels"
+        else:
+            ws_url = f"ws://{host}:{port}/api/kernels/{self._kernel_id}/channels"
+
+        self._ws = create_connection(ws_url, header={"Authorization": f"token {token}"},)
 
     def __del__(self):
         self._session.close()

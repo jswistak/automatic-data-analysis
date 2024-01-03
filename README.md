@@ -28,6 +28,7 @@ PORT=<port to run web app on>
 # jupyter-notebook-runtime
 RUNTIME_HOST=<host of jupyter>
 RUNTIME_PORT=<port of jupyter>
+RUNTIME_USE_HTTPS=<true/false>
 TOKEN=<token to access jupyter>
 
 # apache-zeppelin-runtime

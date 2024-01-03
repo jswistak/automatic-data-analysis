@@ -42,6 +42,7 @@ def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
         runtime_kwargs["password"] = getenv("PASSWORD")
     elif runtime == "jupyter-notebook":
         runtime_kwargs["token"] = getenv("TOKEN")
+        runtime_kwargs["use_https"] = getenv("RUNTIME_USE_HTTPS") == "true"
 
     code_assistant_kwargs = {}
     if code_assistant == "openai":
