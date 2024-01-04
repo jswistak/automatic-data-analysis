@@ -152,7 +152,7 @@ if __name__ == "__main__":
         help=f"Analysis assistant type to be used for analysis ({', '.join(assistants.keys())})",
     )
     parser.add_argument(
-        "--prompt",
+        "--prompt_type",
         type=str,
         choices=prompts.keys(),
         help=f"Prompt type to be used for generating prompts ({', '.join(prompts.keys())})",
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     runtime = get_value("runtime", args)
     code_assistant = get_value("code_assistant", args)
     analysis_assistant = get_value("analysis_assistant", args)
-    prompt = get_value("prompt", args)
+    prompt = get_value("prompt_type", args)
 
     if (
         runtime not in runtimes.keys()
