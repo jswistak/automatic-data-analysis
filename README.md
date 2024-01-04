@@ -16,7 +16,7 @@ DATASET_PATH=<path to dataset>
 RUNTIME=<selected runtime> # apache-zeppelin, python-ssh, jupyter-notebook
 CODE_ASSISTANT=<selected LLM> # openai
 ANALYSIS_ASSISTANT=<selected LLM> # openai
-PROMPT=<selected prompting strategy> # few-shot
+PROMPT_TYPE=<selected prompting strategy> # few-shot
 PORT=<port to run web app on>
 
 # python-ssh-runtime
