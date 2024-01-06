@@ -7,6 +7,12 @@ from prompt_manager.ipromptmanager import IPromptManager
 from runtime.iruntime import IRuntime
 
 
+class CodeRetryLimitExceeded(Exception):
+    """Exception raised when too many errors occur during code execution."""
+
+    pass
+
+
 class Conversation:
     """Conversation class that handles the conversation flow and stores the conversation history."""
 
@@ -112,7 +118,7 @@ class Conversation:
             raise Exception(f"Invalid conversation role: {last_message.role}")
 
         last_message = self._get_last_message()
-        error_limit = 5
+        error_limit = 3
         error_count = 0
         while (
             last_message.role == ConversationRolesInternalEnum.CODE
@@ -122,7 +128,7 @@ class Conversation:
 
             error_count += 1
             if error_count >= error_limit:
-                raise Exception("Too many errors in code.")
+                raise CodeRetryLimitExceeded()
             self._add_to_conversation(
                 role=ConversationRolesInternalEnum.ANALYSIS,
                 content="Execution of provided code failed. Please fix the error and try again. \n\nHere is the error message:\n```"
