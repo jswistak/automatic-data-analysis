@@ -33,7 +33,7 @@ jobs:
           pdoc3 --html -o ../docs ./
           cd -
           mkdir _site
-          mv docs/src/*/* _site/
+          mv docs/src/* _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
