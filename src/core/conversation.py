@@ -10,7 +10,9 @@ from runtime.iruntime import IRuntime
 class CodeRetryLimitExceeded(Exception):
     """Exception raised when too many errors occur during code execution."""
 
-    pass
+    def __init__(self, message="Exceeded code retry limit"):
+        self.message = message
+        super().__init__(self.message)
 
 
 class Conversation:
@@ -85,8 +87,8 @@ class Conversation:
 
                 # stop execution if error
                 if output[-1].startswith("Traceback"):
-                    # Shorten the traceback to avoid exceeding the message limit
-                    output[-1] = "\n".join(output[-1].split("\n")[-10:]) + "\n..."
+                    if len(output[-1].split("\n")) > 10:
+                        output[-1] = "Traceback:\n...\n" + "\n".join(output[-1].split("\n")[-9:])
                     break
 
                 if self._runtime.check_if_plot_in_output(cell_idx):
@@ -128,7 +130,7 @@ class Conversation:
 
             error_count += 1
             if error_count >= error_limit:
-                raise CodeRetryLimitExceeded()
+                raise CodeRetryLimitExceeded(last_message.content)
             self._add_to_conversation(
                 role=ConversationRolesInternalEnum.ANALYSIS,
                 content="Execution of provided code failed. Please fix the error and try again. \n\nHere is the error message:\n```"
