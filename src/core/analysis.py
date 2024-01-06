@@ -34,10 +34,12 @@ def analyze(
     cell_idx = runtime.add_code(load_dataset_code)
     runtime.execute_cell(cell_idx)
 
-    cell_idx = runtime.add_code("df.head()")
-
-    runtime.execute_cell(cell_idx)
     initial_message = "Dataset is loaded into the runtime in the variable 'df'.'\nYou can try to print the first 5 rows of the dataset by executing the following code: ```python\ndf.head()```"
+    runtime.add_description(initial_message)
+
+    cell_idx = runtime.add_code("df.head()")
+    
+    runtime.execute_cell(cell_idx)
     conv_list.append(
         Message(
             role=ConversationRolesInternalEnum.CODE,

@@ -60,6 +60,7 @@ def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
 
 
 def main(
+    dataset_name: Union[str, None],
     dataset_path: str,
     runtime_name: str,
     code_assistant_name: str,
@@ -94,6 +95,11 @@ def main(
         or not isinstance(prompt_manager, IPromptManager)
     ):
         raise ValueError(f"Error while initializing the modules.")
+    
+    if not dataset_name:
+        dataset_name = dataset_path.split("/")[-1]
+    
+    runtime.set_report_title(f"Analysis of dataset {dataset_name}")
 
     return analyze(
         dataset_path,
@@ -176,4 +182,4 @@ if __name__ == "__main__":
         )
 
     kwargs = get_runtime_kwargs(runtime, code_assistant, analysis_assistant)
-    main(dataset_path, runtime, code_assistant, analysis_assistant, prompt, **kwargs)
+    main(None, dataset_path, runtime, code_assistant, analysis_assistant, prompt, **kwargs)

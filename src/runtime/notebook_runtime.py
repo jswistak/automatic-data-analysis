@@ -51,6 +51,9 @@ class NotebookRuntime(IRuntime):
         self._session.close()
         self._ws.close()
 
+    def set_report_title(self, title: str) -> None:
+        self._notebook.metadata["title"] = title
+
     def add_description(self, description: str) -> int:
         self._notebook.cells.append(nbformat.v4.new_markdown_cell(description))
         return len(self._notebook.cells) - 1
