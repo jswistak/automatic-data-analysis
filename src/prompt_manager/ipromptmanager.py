@@ -42,6 +42,7 @@ class IPromptManager(ABC):
     ) -> list[Message]:
         """
         Change the roles of the messages in the conversation, based on a dictionary.
+        It limits the number of messages to be passed to the LLM not to exceed the token limit.
         """
         llm_conversation = []
         for message in conversation[:limit]:
