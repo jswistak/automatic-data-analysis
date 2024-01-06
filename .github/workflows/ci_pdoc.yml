@@ -29,7 +29,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          cd docs
+          cd src
           pdoc3 --html -o ../docs ./
           cd -
           mkdir _site
