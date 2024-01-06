@@ -66,6 +66,7 @@ class Conversation:
         self._add_to_conversation(
             ConversationRolesInternalEnum.ANALYSIS, analysis_response
         )
+        self._runtime.add_description(analysis_response)
 
     def _execute_python_snippet(self, code: str) -> int:
         cell_idx = self._runtime.add_code(code)

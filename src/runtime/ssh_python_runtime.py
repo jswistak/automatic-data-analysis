@@ -46,6 +46,9 @@ class SSHPythonRuntime(IRuntime):
         self._shell.close()
         self._ssh.close()
 
+    def set_report_title(self, title: str) -> None:
+        self._cells.insert(0, _SSHPythonRuntimeCell("content", title + "\n============="))
+
     def add_description(self, description: str) -> int:
         self._cells.append(_SSHPythonRuntimeCell(description, "description"))
         return len(self._cells) - 1

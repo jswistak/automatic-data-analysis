@@ -14,6 +14,13 @@ class IRuntime(ABC):
     """
 
     @abstractmethod
+    def set_report_title(self, title: str) -> None:
+        """
+        Sets the title of the report.
+        """
+        pass
+
+    @abstractmethod
     def add_description(self, description: str) -> int:
         """
         Adds a cell with the description of the process.

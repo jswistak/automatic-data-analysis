@@ -94,6 +94,8 @@ def main(
         or not isinstance(prompt_manager, IPromptManager)
     ):
         raise ValueError(f"Error while initializing the modules.")
+    
+    runtime.set_report_title(f"Analysis of dataset {dataset_path}")
 
     return analyze(
         dataset_path,
