@@ -6,7 +6,8 @@ RUN apt-get update && \
     apt-get install -y \
     curl \
     poppler-utils \
-    texlive-xetex
+    texlive-xetex \
+    pandoc
 
 # Update pip and install requirements
 RUN pip install --upgrade pip

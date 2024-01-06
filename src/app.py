@@ -55,6 +55,7 @@ if (
 
         with NamedTemporaryFile(delete=False) as tmp:
             tmp.write(uploaded_file.read())
+            dataset_name = uploaded_file.name
             dataset_path = tmp.name
 
             runtime = "jupyter-notebook"
@@ -68,6 +69,7 @@ if (
                 kwargs["analysis_assistant_kwargs"]["api_key"] = llm_token
                 kwargs["code_assistant_kwargs"]["api_key"] = llm_token
             output_pdf_path = main(
+                dataset_name,
                 dataset_path,
                 runtime,
                 code_assistants[code_assistant],
