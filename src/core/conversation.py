@@ -120,7 +120,7 @@ class Conversation:
 
         code_output = last_message.content.split(
             "\n\nHere is the output of the provided code:\n```"
-        )[1]
+        )[-1]
         if last_message.role == ConversationRolesInternalEnum.CODE and (
             "Traceback" in code_output or "Error" in code_output
         ):
