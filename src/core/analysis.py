@@ -12,6 +12,14 @@ from runtime.iruntime import IRuntime
 # TODO: Rewrite the cell in case of error
 
 
+class CodeRetryLimitExceeded(Exception):
+    """Exception raised when too many errors occur during code execution."""
+
+    def __init__(self, message="Exceeded code retry limit"):
+        self.message = message
+        super().__init__(self.message)
+
+
 def analyze(
     dataset_path: str,
     runtime: IRuntime,
@@ -38,7 +46,7 @@ def analyze(
     runtime.add_description(initial_message)
 
     cell_idx = runtime.add_code("df.head()")
-    
+
     runtime.execute_cell(cell_idx)
     conv_list.append(
         Message(
@@ -48,7 +56,7 @@ def analyze(
             ),
         )
     )
-    print_message(conv_list[-1], Colors.RED)
+    print_message(conv_list[-1], Colors.PURPLE)
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
 
@@ -60,7 +68,18 @@ def analyze(
         ):
             break
 
-        msg: Message = conv.perform_next_step()
+        msg = conv.perform_next_step()
+        code_retry_limit = 3
+        while conv.last_msg_contains_execution_errors():
+            print_message(msg, Colors.RED)
+            if code_retry_limit == 0:
+                raise CodeRetryLimitExceeded()
+
+            print(
+                f"{Colors.BOLD_YELLOW.value}Error in code ocurred. Retrying code generation...{Colors.END.value}"
+            )
+            msg = conv.fix_last_code_message()
+
         print_message(
             msg,
             Colors.PURPLE
