@@ -1,5 +1,5 @@
 import json
-from typing import List, Tuple
+from typing import List
 
 from llm_api.iassistant import IAssistant
 from models.models import ConversationRolesInternalEnum, LLMType, Message
@@ -85,18 +85,10 @@ class Conversation:
                 code = code_snippet[6:]
                 cell_idx = self._execute_python_snippet(code)
                 output.append(self._runtime.get_cell_output_stream(cell_idx))
-
-                # stop execution if error
-                if output[-1].startswith("Traceback"):
-                    if len(output[-1].split("\n")) > 10:
-                        output[-1] = "Traceback:\n...\n" + "\n".join(output[-1].split("\n")[-9:])
-                    break
-
                 if self._runtime.check_if_plot_in_output(cell_idx):
                     output[
                         -1
                     ] = "Plot generated, but cannot be interpreted in a text format."
-
         if len(output) > 0:
             code_response = self.format_code_assistant_message(
                 code_response, "\n".join(output)
@@ -106,11 +98,8 @@ class Conversation:
             role=ConversationRolesInternalEnum.CODE, content=code_response
         )
 
-    def perform_next_step(self) -> Tuple[Message, int]:
-        """
-        Perform the next step in the conversation.
-        Returns the last message in the conversation and number of failed code executions.
-        """
+    def perform_next_step(self) -> Message:
+        """Perform the next step in the conversation."""
         # Generate response
         last_message = self._get_last_message()
         if last_message.role == ConversationRolesInternalEnum.CODE:
@@ -120,31 +109,7 @@ class Conversation:
         else:
             raise Exception(f"Invalid conversation role: {last_message.role}")
 
-        last_message = self._get_last_message()
-        error_limit = 3
-        error_count = 0
-        while (
-            last_message.role == ConversationRolesInternalEnum.CODE
-            and "Traceback" in last_message.content
-        ):
-            # Ask code assistant to fix the error and overwrite previous output. Do until error is fixed.
-
-            error_count += 1
-            if error_count >= error_limit:
-                raise CodeRetryLimitExceeded(last_message.content)
-            self._add_to_conversation(
-                role=ConversationRolesInternalEnum.ANALYSIS,
-                content="Execution of provided code failed. Please fix the error and try again. \n\nHere is the error message:\n```"
-                + last_message.content
-                + "```",
-            )
-            self._send_message_code()
-            # Remove artificial message and previous code output
-            self._conversation.pop(-2)
-            self._conversation.pop(-2)
-            last_message = self._get_last_message()
-
-        return self._get_last_message(), error_count
+        return self._get_last_message()
 
     def get_conversation_json(self) -> str:
         """Get the conversation in json format."""

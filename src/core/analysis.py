@@ -51,7 +51,6 @@ def analyze(
     print_message(conv_list[-1], Colors.RED)
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
-    total_error_count = 0
 
     while analysis_message_limit is None or analysis_message_limit > 0:
         if analysis_message_limit is not None:
@@ -61,18 +60,13 @@ def analyze(
         ):
             break
 
-        msg, error_count = conv.perform_next_step()
-        total_error_count += error_count
+        msg: Message = conv.perform_next_step()
         print_message(
             msg,
             Colors.PURPLE
             if msg.role == ConversationRolesInternalEnum.CODE
             else Colors.BLUE,
         )
-        if msg.role == ConversationRolesInternalEnum.CODE:
-            print(
-                f"{Colors.BOLD_PURPLE.value}Total error count: {total_error_count}{Colors.END.value}"
-            )
 
     report_path = runtime.generate_report(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
