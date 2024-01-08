@@ -59,6 +59,7 @@ def analyze(
     print_message(conv_list[-1], Colors.PURPLE)
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
+    error_count = 0
 
     while analysis_message_limit is None or analysis_message_limit > 0:
         if analysis_message_limit is not None:
@@ -71,6 +72,7 @@ def analyze(
         msg = conv.perform_next_step()
         code_retry_limit = 3
         while conv.last_msg_contains_execution_errors():
+            error_count += 1
             print_message(msg, Colors.RED)
             if code_retry_limit == 0:
                 raise CodeRetryLimitExceeded()
@@ -87,6 +89,7 @@ def analyze(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     )
     print(f"Report has been saved to {report_path}")
+    print(f"{Colors.BOLD_RED}Total number of errors: {error_count}{Colors.END.value}")
 
     conv_json = conv.get_conversation_json()
     conv_path = f"conversations/conversation-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
