@@ -74,10 +74,6 @@ def analyze(
             print_message(msg, Colors.RED)
             if code_retry_limit == 0:
                 raise CodeRetryLimitExceeded()
-
-            print(
-                f"{Colors.BOLD_YELLOW.value}Error in code ocurred. Retrying code generation...{Colors.END.value}"
-            )
             msg = conv.fix_last_code_message()
 
         print_message(

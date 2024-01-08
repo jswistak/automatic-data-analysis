@@ -89,7 +89,9 @@ class Conversation:
                     last_output = output[-1].split("Traceback")
                     traceback = last_output[1].split("\n")
                     if len(traceback) > 20:
-                        traceback = traceback[0] + "\n...\n" + "\n".join(traceback[-19:])
+                        traceback = (
+                            traceback[0] + "\n...\n" + "\n".join(traceback[-19:])
+                        )
                         output[-1] = last_output[0] + "Traceback" + traceback
 
                 break
@@ -109,8 +111,18 @@ class Conversation:
     def last_msg_contains_execution_errors(self) -> bool:
         """Check if the last step in the conversation contains errors."""
         last_message = self._get_last_message()
+        if (
+            last_message.role != ConversationRolesInternalEnum.CODE
+            or "\n\nHere is the output of the provided code:\n```"
+            not in last_message.content
+        ):
+            return False
+
+        code_output = last_message.content.split(
+            "\n\nHere is the output of the provided code:\n```"
+        )[1]
         if last_message.role == ConversationRolesInternalEnum.CODE and (
-            "Traceback" in last_message.content or "Error" in last_message.content
+            "Traceback" in code_output or "Error" in code_output
         ):
             return True
 
@@ -139,7 +151,7 @@ class Conversation:
         last_message = self._get_last_message()
         if last_message.role != ConversationRolesInternalEnum.CODE:
             raise Exception("Only code messages can be fixed")
-        
+
         if not self.last_msg_contains_execution_errors():
             raise Exception("Last message does not contain errors")
 
