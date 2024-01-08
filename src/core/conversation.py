@@ -166,10 +166,10 @@ class Conversation:
         self.perform_next_step()
 
         # # Cleaning up previous code and fix request
-        # self._conversation.pop(-3)
-        # self._conversation.pop(-2)
-        # self._runtime.remove_cell(-3)
-        # self._runtime.remove_cell(-2)
+        self._conversation.pop(-3)
+        self._conversation.pop(-2)
+        self._runtime.remove_cell(-3)
+        self._runtime.remove_cell(-2)
 
         return self._get_last_message()
 
