@@ -12,6 +12,14 @@ from runtime.iruntime import IRuntime
 # TODO: Rewrite the cell in case of error
 
 
+class CodeRetryLimitExceeded(Exception):
+    """Exception raised when too many errors occur during code execution."""
+
+    def __init__(self, message="Exceeded code retry limit"):
+        self.message = message
+        super().__init__(self.message)
+
+
 def analyze(
     dataset_path: str,
     runtime: IRuntime,
@@ -38,7 +46,7 @@ def analyze(
     runtime.add_description(initial_message)
 
     cell_idx = runtime.add_code("df.head()")
-    
+
     runtime.execute_cell(cell_idx)
     conv_list.append(
         Message(
@@ -48,10 +56,10 @@ def analyze(
             ),
         )
     )
-    print_message(conv_list[-1], Colors.RED)
+    print_message(conv_list[-1], Colors.PURPLE)
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
-    total_error_count = 0
+    error_count = 0
 
     while analysis_message_limit is None or analysis_message_limit > 0:
         if analysis_message_limit is not None:
@@ -61,27 +69,32 @@ def analyze(
         ):
             break
 
-        msg, error_count = conv.perform_next_step()
-        total_error_count += error_count
+        msg = conv.perform_next_step()
+        code_retry_limit = 3
+        while conv.last_msg_contains_execution_errors():
+            error_count += 1
+            print_message(msg, Colors.RED)
+            if code_retry_limit == 0:
+                raise CodeRetryLimitExceeded()
+            msg = conv.fix_last_code_message()
+
         print_message(
             msg,
             Colors.PURPLE
             if msg.role == ConversationRolesInternalEnum.CODE
             else Colors.BLUE,
         )
-        if msg.role == ConversationRolesInternalEnum.CODE:
-            print(
-                f"{Colors.BOLD_PURPLE.value}Total error count: {total_error_count}{Colors.END.value}"
-            )
 
     report_path = runtime.generate_report(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     )
-    print(f"Report has been saved to {report_path}")
+
+    print(f"{Colors.BOLD_RED}Total number of errors: {error_count}{Colors.END.value}")
+    print(f"{Colors.BOLD_YELLOW}Report has been saved to {report_path}{Colors.END.value}")
 
     conv_json = conv.get_conversation_json()
     conv_path = f"conversations/conversation-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
     with open(conv_path, "w") as f:
         json.dump(conv_json, f, indent=4)
-    print(f"Conversation has been saved to {conv_path}")
+    print(f"{Colors.BOLD_YELLOW}Conversation has been saved to {conv_path}{Colors.END.value}")
     return report_path

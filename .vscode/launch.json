@@ -1,0 +1,16 @@
+{   
+    "configurations": [
+        {
+            "name": "Python:Streamlit",
+            "type": "python",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                "src/app.py",
+                "--server.port",
+                "8502",
+            ],
+        }
+    ]
+}
