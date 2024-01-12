@@ -90,13 +90,13 @@ class Conversation:
             # Stop further code execution if the code snippet contains errors
             if output and ("Traceback" in output[-1] or "Error" in output[-1]):
                 if "Traceback" in output[-1]:
-                    last_output = output[-1].split("Traceback")
-                    traceback = last_output[1].split("\n")
+                    pos = output[-1].find("Traceback")
+                    traceback = output[-1][pos:].split("\n")
                     if len(traceback) > 20:
                         traceback = (
                             traceback[0] + "\n...\n" + "\n".join(traceback[-19:])
                         )
-                        output[-1] = last_output[0] + "Traceback" + traceback
+                        output[-1] = output[-1][:pos] + traceback
 
                 break
 
@@ -178,7 +178,7 @@ class Conversation:
         self._conversation.pop(-3)
         self._conversation.pop(-2)
         for _ in range(previous_msg_first_cell_idx, self._last_msg_first_cell_idx):
-            self._runtime.delete_cell(previous_msg_first_cell_idx)
+            self._runtime.remove_cell(previous_msg_first_cell_idx)
 
         return self._get_last_message()
 
