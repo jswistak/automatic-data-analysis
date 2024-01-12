@@ -74,6 +74,7 @@ class Conversation:
         code_response = self._code_assistant.generate_response(code_conv)
         code_snippets = self._extract_code_snippets_from_message(code_response)
         output = []
+        first_snippet_idx = -1
 
         for code_snippet in code_snippets:
             if not code_snippet.startswith("python"):
@@ -81,6 +82,9 @@ class Conversation:
 
             code = code_snippet[6:]  # Remove 'python' from the code snippet
             cell_idx = self._execute_python_snippet(code)
+            if first_snippet_idx == -1:
+                first_snippet_idx = cell_idx
+
             output.append(self._runtime.get_cell_output_stream(cell_idx))
 
             # Stop further code execution if the code snippet contains errors
@@ -103,6 +107,9 @@ class Conversation:
             code_response = self.format_code_assistant_message(
                 code_response, "\n".join(output)
             )
+
+        if first_snippet_idx != -1:
+            self._last_msg_first_cell_idx = first_snippet_idx
 
         self._add_to_conversation(
             role=ConversationRolesInternalEnum.CODE, content=code_response
@@ -163,13 +170,15 @@ class Conversation:
         self._conversation.append(fix_request_msg)
         print_message(fix_request_msg, Colors.BLUE)
 
+        previous_msg_first_cell_idx = self._last_msg_first_cell_idx
+
         self.perform_next_step()
 
         # # Cleaning up previous code and fix request
         self._conversation.pop(-3)
         self._conversation.pop(-2)
-        self._runtime.remove_cell(-3)
-        self._runtime.remove_cell(-2)
+        for _ in range(previous_msg_first_cell_idx, self._last_msg_first_cell_idx):
+            self._runtime.delete_cell(previous_msg_first_cell_idx)
 
         return self._get_last_message()
 
