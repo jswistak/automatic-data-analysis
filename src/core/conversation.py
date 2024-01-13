@@ -71,7 +71,10 @@ class Conversation:
             self._conversation, ConversationRolesInternalEnum.CODE, LLMType.GPT4
         )
 
-        code_response = self._code_assistant.generate_response(code_conv)
+        code_response = self._code_assistant.generate_response(
+            code_conv,
+            temperature=0.5,
+        )
         code_snippets = self._extract_code_snippets_from_message(code_response)
         output = []
         first_snippet_idx = -1
