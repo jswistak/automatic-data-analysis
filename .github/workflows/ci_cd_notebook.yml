@@ -1,4 +1,4 @@
-name: Build, Push and Deploy Docker Image of Core App
+name: Build, Push and Deploy Docker Image of Notebook Runtime
 
 on:
   push:
