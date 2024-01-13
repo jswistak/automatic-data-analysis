@@ -23,10 +23,13 @@ services:
 
   jupyter-notebook-runtime:
     profiles: ["jupyter-notebook"]
-    image: jupyter/scipy-notebook:python-3.10
+    build:
+      context: .
+      dockerfile: runtime/jupyter-notebook.Dockerfile
     ports:
       - "${RUNTIME_PORT}:8888"
-    command: ["start-notebook.sh", "--NotebookApp.token='${TOKEN}'"]
+    environment:
+      - TOKEN=${TOKEN}
 
   apache-zeppelin-runtime:
     profiles: ["apache-zeppelin"]
