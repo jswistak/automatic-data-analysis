@@ -8,6 +8,7 @@ from reportlab.pdfgen import canvas
 from pdf2image import convert_from_bytes
 from main import main, get_runtime_kwargs
 from dotenv import load_dotenv
+import traceback
 
 
 load_dotenv()
@@ -34,7 +35,7 @@ else:
     llm_token = None
 
 analysis_message_limit = st.number_input(
-    "Analysis Message Limit", min_value=5, max_value=1000, value=15
+    "Analysis Message Limit", min_value=3, max_value=40, value=3
 )
 
 uploaded_file = st.file_uploader("Upload CSV", type="csv")
@@ -100,6 +101,7 @@ if (
 
     except Exception as e:
         st.error("An error occurred while analyzing the data: " + str(e))
+        traceback.print_exc()
 
     finally:
         # TODO temporarily save the input file
