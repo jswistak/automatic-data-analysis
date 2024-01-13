@@ -183,6 +183,8 @@ class Conversation:
         for _ in range(previous_msg_first_cell_idx, self._last_msg_first_cell_idx):
             self._runtime.remove_cell(previous_msg_first_cell_idx)
 
+        self._last_msg_first_cell_idx = previous_msg_first_cell_idx
+
         return self._get_last_message()
 
     def get_conversation_json(self) -> str:
