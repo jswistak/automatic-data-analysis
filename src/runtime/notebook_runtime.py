@@ -171,7 +171,7 @@ class NotebookRuntime(IRuntime):
             response = json.loads(self._ws.recv())
 
             if (
-                response["parent_header"] is None
+                response["parent_header"].get("msg_id") is None
                 or response["parent_header"]["msg_id"] != msg["msg_id"]
             ):
                 # Message not related to the execution request
