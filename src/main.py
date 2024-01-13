@@ -13,6 +13,7 @@ from prompt_manager.zero_shot import ZeroShot
 from runtime.iruntime import IRuntime
 from runtime.notebook_runtime import NotebookRuntime
 from runtime.ssh_python_runtime import SSHPythonRuntime
+from llm_api.llama_chat_assistant import LLaMA2ChatAssistant
 
 runtimes: dict[str, IRuntime] = {
     "python-ssh": SSHPythonRuntime,
@@ -21,6 +22,7 @@ runtimes: dict[str, IRuntime] = {
 
 assistants: dict[str, IAssistant] = {
     "openai": OpenAIAssistant,
+    "llama-chat": LLaMA2ChatAssistant,
 }
 
 prompts: dict[str, IPromptManager] = {
@@ -47,10 +49,14 @@ def get_runtime_kwargs(runtime, code_assistant, analysis_assistant) -> dict:
     code_assistant_kwargs = {}
     if code_assistant == "openai":
         code_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+    else:
+        code_assistant_kwargs["api_key"] = getenv("TOGETHER_API_KEY")
 
     analysis_assistant_kwargs = {}
     if analysis_assistant == "openai":
         analysis_assistant_kwargs["api_key"] = getenv("OPENAI_API_KEY")
+    else:
+        analysis_assistant_kwargs["api_key"] = getenv("TOGETHER_API_KEY")
 
     return {
         "runtime_kwargs": runtime_kwargs,
@@ -95,10 +101,10 @@ def main(
         or not isinstance(prompt_manager, IPromptManager)
     ):
         raise ValueError(f"Error while initializing the modules.")
-    
+
     if not dataset_name:
         dataset_name = dataset_path.split("/")[-1]
-    
+
     runtime.set_report_title(f"Analysis of dataset {dataset_name}")
 
     return analyze(
@@ -182,4 +188,12 @@ if __name__ == "__main__":
         )
 
     kwargs = get_runtime_kwargs(runtime, code_assistant, analysis_assistant)
-    main(None, dataset_path, runtime, code_assistant, analysis_assistant, prompt, **kwargs)
+    main(
+        None,
+        dataset_path,
+        runtime,
+        code_assistant,
+        analysis_assistant,
+        prompt,
+        **kwargs,
+    )
