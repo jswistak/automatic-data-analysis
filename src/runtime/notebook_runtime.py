@@ -22,7 +22,13 @@ class NotebookRuntime(IRuntime):
     _ws_username = "username"
     _ws_jupyter_message_version = "5.3"
 
-    def __init__(self, token: str, host: str = "127.0.0.1", port: int = 8888, use_https: bool = True):
+    def __init__(
+        self,
+        token: str,
+        host: str = "127.0.0.1",
+        port: int = 8888,
+        use_https: bool = True,
+    ):
         if use_https:
             self._base_url = f"https://{host}:{port}/api"
         else:
@@ -45,7 +51,10 @@ class NotebookRuntime(IRuntime):
         else:
             ws_url = f"ws://{host}:{port}/api/kernels/{self._kernel_id}/channels"
 
-        self._ws = create_connection(ws_url, header={"Authorization": f"token {token}"},)
+        self._ws = create_connection(
+            ws_url,
+            header={"Authorization": f"token {token}"},
+        )
 
     def __del__(self):
         self._session.close()
@@ -161,7 +170,10 @@ class NotebookRuntime(IRuntime):
         while not idle_signal_received or not execute_reply_received:
             response = json.loads(self._ws.recv())
 
-            if response["parent_header"]["msg_id"] != msg["msg_id"]:
+            if (
+                response["parent_header"].get("msg_id") is None
+                or response["parent_header"]["msg_id"] != msg["msg_id"]
+            ):
                 # Message not related to the execution request
                 continue
 
