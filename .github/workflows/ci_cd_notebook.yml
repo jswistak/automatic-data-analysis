@@ -1,0 +1,31 @@
+name: Build, Push and Deploy Docker Image of Core App
+
+on:
+  push:
+    branches: master
+    paths: 'runtime/jupyter-notebook.Dockerfile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and Push Docker Image
+        run: |
+            docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }} .
+            docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }}
+
+      - name: Deploy to Azure Container App
+        run: |
+            az containerapp update \
+              --name ${{ vars.NOTEBOOK_CONTAINER_NAME }} \
+              --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+              --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }} \
+        
