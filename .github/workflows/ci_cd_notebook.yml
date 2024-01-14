@@ -35,5 +35,5 @@ jobs:
             az containerapp update \
               --name ${{ vars.NOTEBOOK_CONTAINER_NAME }} \
               --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
-              --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }} \
+              --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }}
         

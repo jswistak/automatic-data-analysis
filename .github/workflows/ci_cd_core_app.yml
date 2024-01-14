@@ -35,5 +35,5 @@ jobs:
             az containerapp update \
               --name ${{ vars.CORE_APP_CONTAINER_NAME }} \
               --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
-              --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CORE_APP_TAG }}:${{ github.sha }} \
+              --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CORE_APP_TAG }}:${{ github.sha }}
         
