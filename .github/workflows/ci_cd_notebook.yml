@@ -23,7 +23,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-            docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }} .
+            docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }} -f runtime/jupyter-notebook.Dockerfile .
             docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.NOTEBOOK_TAG }}:${{ github.sha }}
 
   deploy:
