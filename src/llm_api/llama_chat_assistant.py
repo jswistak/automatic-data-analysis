@@ -27,6 +27,7 @@ class LLaMA2ChatAssistant(IAssistant):
         self,
         conversation: list[ChatCompletionMessageParam],
         temperature: float = 1.0,
+        top_p: float = 1.0,
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
@@ -37,11 +38,11 @@ class LLaMA2ChatAssistant(IAssistant):
         Returns:
         str: The generated response from the LLM.
         """
-
         response = self.client.chat.completions.create(
             model=MODEL_NAME,
             messages=conversation,
             temperature=temperature,
+            top_p=top_p,
         )
 
         return _get_response(response)
