@@ -1,10 +1,11 @@
 import tiktoken
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
-
+from openai import BadRequestError
 from llm_api.iassistant import IAssistant
 
 MODEL_NAME = "gpt-3.5-turbo"
+FALLBACK_MODEL_NAME = "gpt-3.5-turbo-16k"
 enc = tiktoken.encoding_for_model(MODEL_NAME)
 
 
@@ -43,13 +44,24 @@ class OpenAIAssistant(IAssistant):
         Returns:
         str: The generated response from the LLM.
         """
-
-        response = self.client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=conversation,
-            temperature=temperature,
-            top_p=top_p,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=conversation,
+                temperature=temperature,
+                top_p=top_p,
+            )
+        except BadRequestError as e:
+            # try to generate a response with a bigger context window model
+            print(
+                "Error generating response with the main model, trying fallback model"
+            )
+            response = self.client.chat.completions.create(
+                model=FALLBACK_MODEL_NAME,
+                messages=conversation,
+                temperature=temperature,
+                top_p=top_p,
+            )
 
         return _get_response(response)
 
