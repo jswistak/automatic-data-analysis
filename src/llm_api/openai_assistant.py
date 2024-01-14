@@ -4,7 +4,7 @@ from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 from llm_api.iassistant import IAssistant
 
-MODEL_NAME = "gpt-3.5-turbo-16k"
+MODEL_NAME = "gpt-3.5-turbo"
 enc = tiktoken.encoding_for_model(MODEL_NAME)
 
 
@@ -32,6 +32,7 @@ class OpenAIAssistant(IAssistant):
         self,
         conversation: list[ChatCompletionMessageParam],
         temperature: float = 1.0,
+        top_p: float = 1.0,
     ) -> str:
         """
         Generate a response based on a conversation context and/or a specific message.
@@ -47,6 +48,7 @@ class OpenAIAssistant(IAssistant):
             model=MODEL_NAME,
             messages=conversation,
             temperature=temperature,
+            top_p=top_p,
         )
 
         return _get_response(response)
