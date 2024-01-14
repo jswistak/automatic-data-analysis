@@ -67,6 +67,16 @@ class Conversation:
         return cell_idx
 
     def _send_message_code(self) -> None:
+        """
+        Generates output from the code assistant and executes the code it generates.
+
+        If the code assistant generates multiple code snippets, it executes them one by one.
+        Output from each code snippet is stored in the conversation history and added to the report.
+        In case snippet execution fails, the further execution is stopped.
+        If traceback is longer than 20 lines, it is shortened to 20 lines.
+        If plot was generated successfully, it is mentioned in the text output.
+        """
+
         code_conv = self._prompt.generate_conversation_context(
             self._conversation, ConversationRolesInternalEnum.CODE, LLMType.GPT4
         )
