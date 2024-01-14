@@ -89,12 +89,18 @@ def analyze(
         "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     )
 
-    print(f"{Colors.BOLD_RED}Total number of errors: {error_count}{Colors.END.value}")
-    print(f"{Colors.BOLD_YELLOW}Report has been saved to {report_path}{Colors.END.value}")
+    print(
+        f"{Colors.BOLD_RED.value}Total number of errors: {error_count}{Colors.END.value}"
+    )
+    print(
+        f"{Colors.BOLD_YELLOW.value}Report has been saved to {report_path}{Colors.END.value}"
+    )
 
     conv_json = conv.get_conversation_json()
     conv_path = f"conversations/conversation-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
     with open(conv_path, "w") as f:
         json.dump(conv_json, f, indent=4)
-    print(f"{Colors.BOLD_YELLOW}Conversation has been saved to {conv_path}{Colors.END.value}")
+    print(
+        f"{Colors.BOLD_YELLOW.value}Conversation has been saved to {conv_path}{Colors.END.value}"
+    )
     return report_path
