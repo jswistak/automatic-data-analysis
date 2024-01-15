@@ -30,9 +30,14 @@ analysis_assistant = st.selectbox(
 )
 
 if code_assistant == "OpenAI" or analysis_assistant == "OpenAI":
-    llm_token = st.text_input("Enter API Token", type="password")
+    openai_token = st.text_input("Enter OpenAI Token", type="password")
 else:
-    llm_token = None
+    openai_token = None
+
+if code_assistant != "OpenAI" or analysis_assistant != "OpenAI":
+    together_token = st.text_input("Enter TogetherAI Token", type="password")
+else:
+    together_token = None
 
 analysis_message_limit = st.number_input(
     "Analysis Message Limit", min_value=3, max_value=40, value=3
@@ -48,7 +53,13 @@ if (
     and analysis_assistant
     and prompting_technique
     and analysis_message_limit
-    and (llm_token or (code_assistant != "OpenAI" and analysis_assistant != "OpenAI"))
+    and (
+        openai_token or (code_assistant != "OpenAI" and analysis_assistant != "OpenAI")
+    )
+    and (
+        together_token
+        or (code_assistant == "OpenAI" and analysis_assistant == "OpenAI")
+    )
     and st.button("Analyze")
 ):
     try:
@@ -66,9 +77,12 @@ if (
                 code_assistants[code_assistant],
                 analysis_assistants[analysis_assistant],
             )
-            if llm_token:
-                kwargs["analysis_assistant_kwargs"]["api_key"] = llm_token
-                kwargs["code_assistant_kwargs"]["api_key"] = llm_token
+            kwargs["analysis_assistant_kwargs"]["api_key"] = (
+                openai_token if analysis_assistant == "OpenAI" else together_token
+            )
+            kwargs["code_assistant_kwargs"]["api_key"] = (
+                openai_token if code_assistant == "OpenAI" else together_token
+            )
             output_pdf_path = main(
                 dataset_name,
                 dataset_path,
