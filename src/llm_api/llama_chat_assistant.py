@@ -1,10 +1,19 @@
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
+from openai import BadRequestError
 
 from llm_api.iassistant import IAssistant
-
+from llm_api.utils import (
+    generate_together_completion,
+    get_together_text,
+    conversation_prompt_to_instruct,
+)
 
 MODEL_NAME = "togethercomputer/llama-2-70b-chat"
+
+FALLBACK_MODEL_NAME = "togethercomputer/Llama-2-7B-32K-Instruct"
+# LLaMA2 with longer context window https://www.together.ai/blog/llama-2-7b-32k
+# MODEL_NAME = FALLBACK_MODEL_NAME
 
 
 def _get_response(response: ChatCompletion) -> str:
@@ -38,12 +47,31 @@ class LLaMA2ChatAssistant(IAssistant):
         Returns:
         str: The generated response from the LLM.
         """
-        response = self.client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=conversation,
-            temperature=temperature,
-            top_p=top_p,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=conversation,
+                temperature=temperature,
+                top_p=top_p,
+            )
+        except BadRequestError as e:
+            from utils import together
+
+            together.api_key = self.client.api_key
+            # try to generate a response with a bigger context window model
+            print(
+                "Error generating response with the main model, trying fallback model"
+            )
+            # TODO check api key, check prompt formatting
+            print(conversation_prompt_to_instruct(conversation))
+            return get_together_text(
+                generate_together_completion(
+                    prompt=conversation_prompt_to_instruct(conversation),
+                    model=FALLBACK_MODEL_NAME,
+                    temperature=temperature,
+                    top_p=top_p,
+                )
+            )
 
         return _get_response(response)
 
