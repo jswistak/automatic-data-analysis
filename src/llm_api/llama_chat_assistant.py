@@ -1,7 +1,7 @@
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from openai import BadRequestError
-
+from llm_api.utils import together
 from llm_api.iassistant import IAssistant
 from llm_api.utils import (
     generate_together_completion,
@@ -31,6 +31,7 @@ class LLaMA2ChatAssistant(IAssistant):
             api_key=api_key,
             base_url="https://api.together.xyz",
         )
+        together.api_key = api_key
 
     def generate_response(
         self,
@@ -55,15 +56,10 @@ class LLaMA2ChatAssistant(IAssistant):
                 top_p=top_p,
             )
         except BadRequestError as e:
-            from utils import together
-
-            together.api_key = self.client.api_key
             # try to generate a response with a bigger context window model
             print(
                 "Error generating response with the main model, trying fallback model"
             )
-            # TODO check api key, check prompt formatting
-            print(conversation_prompt_to_instruct(conversation))
             return get_together_text(
                 generate_together_completion(
                     prompt=conversation_prompt_to_instruct(conversation),

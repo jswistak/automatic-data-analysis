@@ -17,20 +17,21 @@ def generate_together_completion(
         top_k=top_k,
         top_p=top_p,
         repetition_penalty=1.1,
-        stop=["</s>", "[/INST]"],
+        stop=["</s>", "[/INST]", "[/USER]", "[INST]", "[USER]"],
     )
     return output
 
 
 def get_together_text(output: dict) -> str:
-    print(output)
-    return output["output"]["choices"][0]["text"]
+    try:
+        return output["output"]["choices"][0]["text"]
+    except KeyError:
+        raise ValueError("Invalid response or text not found")
 
 
 def conversation_prompt_to_instruct(conversation: list) -> str:
     prompt = ""
     for number in range(len(conversation)):
-        print(conversation[number])
         if conversation[number].role == "system":
             prompt += "<<SYS>>" + conversation[number].content + "<</SYS>>\n"
         elif conversation[number].role == "user":
@@ -40,5 +41,4 @@ def conversation_prompt_to_instruct(conversation: list) -> str:
         else:
             raise ValueError("Invalid message role")
 
-        print(prompt)
     return f"<s>[INST] {prompt} [/INST]"
