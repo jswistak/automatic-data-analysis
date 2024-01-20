@@ -15,6 +15,7 @@ from runtime.iruntime import IRuntime
 from runtime.notebook_runtime import NotebookRuntime
 from runtime.ssh_python_runtime import SSHPythonRuntime
 from llm_api.llama_chat_assistant import LLaMA2ChatAssistant
+from llm_api.mixtral8x7b import Mixtral8x7BAssistant
 
 runtimes: dict[str, IRuntime] = {
     "python-ssh": SSHPythonRuntime,
@@ -25,6 +26,7 @@ assistants: dict[str, IAssistant] = {
     "openai": OpenAIAssistant,
     "llama-chat": LLaMA2ChatAssistant,
     "llama-code": LLaMA2CodeAssistant,
+    "mixtral-8x7b": Mixtral8x7BAssistant,
 }
 
 prompts: dict[str, IPromptManager] = {
