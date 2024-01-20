@@ -6,6 +6,7 @@ from typing import Union
 
 from core.analysis import analyze
 from llm_api.iassistant import IAssistant
+from llm_api.llama_python import LLaMA2CodeAssistant
 from llm_api.openai_assistant import OpenAIAssistant
 from prompt_manager.ipromptmanager import IPromptManager
 from prompt_manager.few_shot import FewShot
@@ -14,6 +15,7 @@ from runtime.iruntime import IRuntime
 from runtime.notebook_runtime import NotebookRuntime
 from runtime.ssh_python_runtime import SSHPythonRuntime
 from llm_api.llama_chat_assistant import LLaMA2ChatAssistant
+from llm_api.mixtral8x7b import Mixtral8x7BAssistant
 
 runtimes: dict[str, IRuntime] = {
     "python-ssh": SSHPythonRuntime,
@@ -23,6 +25,8 @@ runtimes: dict[str, IRuntime] = {
 assistants: dict[str, IAssistant] = {
     "openai": OpenAIAssistant,
     "llama-chat": LLaMA2ChatAssistant,
+    "llama-code": LLaMA2CodeAssistant,
+    "mixtral-8x7b": Mixtral8x7BAssistant,
 }
 
 prompts: dict[str, IPromptManager] = {
