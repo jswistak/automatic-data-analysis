@@ -6,6 +6,7 @@ from typing import Union
 
 from core.analysis import analyze
 from llm_api.iassistant import IAssistant
+from llm_api.llama_python import LLaMA2CodeAssistant
 from llm_api.openai_assistant import OpenAIAssistant
 from prompt_manager.ipromptmanager import IPromptManager
 from prompt_manager.few_shot import FewShot
@@ -23,6 +24,7 @@ runtimes: dict[str, IRuntime] = {
 assistants: dict[str, IAssistant] = {
     "openai": OpenAIAssistant,
     "llama-chat": LLaMA2ChatAssistant,
+    "llama-code": LLaMA2CodeAssistant,
 }
 
 prompts: dict[str, IPromptManager] = {

@@ -21,7 +21,11 @@ prompting_techniques = {"Zero Shot": "zero-shot"}
 prompting_technique = st.selectbox(
     "Select Prompting Technique", prompting_techniques.keys()
 )
-code_assistants = {"OpenAI": "openai", "LLaMA2 Chat": "llama-chat"}
+code_assistants = {
+    "OpenAI": "openai",
+    "LLaMA2 Chat": "llama-chat",
+    "LLaMA2 Code": "llama-code",
+}
 code_assistant = st.selectbox("Select Code Assistant", code_assistants.keys())
 
 analysis_assistants = {"OpenAI": "openai", "LLaMA2 Chat": "llama-chat"}
