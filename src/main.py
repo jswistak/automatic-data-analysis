@@ -77,6 +77,7 @@ def main(
     analysis_assistant_name: str,
     prompt_name: str,
     analysis_message_limit: Union[int, None] = None,
+    output_pdf_path: str = "",
     **kwargs,
 ) -> str:
     """
@@ -118,6 +119,7 @@ def main(
         analysis_assistant,
         prompt_manager,
         analysis_message_limit,
+        output_pdf_path=output_pdf_path,
     )
 
 

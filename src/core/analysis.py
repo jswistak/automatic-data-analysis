@@ -27,6 +27,7 @@ def analyze(
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
     analysis_message_limit: Union[int, None] = None,
+    output_pdf_path: str = None,
 ) -> str:
     """
     Conduct the automated tabular data analysis using LLM for a given dataset.
@@ -45,7 +46,7 @@ def analyze(
     initial_message = "Dataset is loaded into the runtime in the variable 'df'.'\nYou can try to print the first 5 rows of the dataset by executing the following code: ```python\ndf.head()```"
     runtime.add_description(initial_message)
 
-    cell_idx = runtime.add_code("df.head()")
+    cell_idx = runtime.add_code("pd.set_option('display.max_rows', 1000)\ndf")
 
     runtime.execute_cell(cell_idx)
     conv_list.append(
@@ -75,6 +76,7 @@ def analyze(
             error_count += 1
             print_message(msg, Colors.RED)
             if code_retry_limit == 0:
+                print("Exceeded code retry limit")
                 raise CodeRetryLimitExceeded()
             msg = conv.fix_last_code_message()
 
@@ -84,10 +86,12 @@ def analyze(
             if msg.role == ConversationRolesInternalEnum.CODE
             else Colors.BLUE,
         )
+    try:
+        report_name = output_pdf_path.split("/")[-1].split(".")[0]
+    except:
+        report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
-    report_path = runtime.generate_report(
-        "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    )
+    report_path = runtime.generate_report("reports", report_name)
 
     print(
         f"{Colors.BOLD_RED.value}Total number of errors: {error_count}{Colors.END.value}"
