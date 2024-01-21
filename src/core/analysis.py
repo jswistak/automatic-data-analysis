@@ -92,13 +92,8 @@ def analyze(
             )
     except Exception as e:
         try:
-            print("Report has been saved to")
-
             report_path = runtime.generate_report("reports", report_name)
         except Exception as ex:
-            print("Failed to generate report")
-            print(ex)
-            print("\n\n")
             report_path = None
         raise e
 
