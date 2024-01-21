@@ -27,6 +27,7 @@ def analyze(
     analysis_assistant: IAssistant,
     prompt: IPromptManager,
     analysis_message_limit: Union[int, None] = None,
+    output_pdf_path: str = None,
 ) -> str:
     """
     Conduct the automated tabular data analysis using LLM for a given dataset.
@@ -35,6 +36,10 @@ def analyze(
     conv_list: list[Message] = []
     dataset_file_name = dataset_path.split("/")[-1]
     runtime.upload_file(dataset_path, dataset_file_name)
+    try:
+        report_name = output_pdf_path.split("/")[-1].split(".")[0]
+    except:
+        report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     load_dataset_code = "\n".join(
         ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
@@ -60,40 +65,52 @@ def analyze(
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
     error_count = 0
+    try:
+        while analysis_message_limit is None or analysis_message_limit > 0:
+            if analysis_message_limit is not None:
+                analysis_message_limit -= 1
+            elif "q" in input(
+                f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
+            ):
+                break
 
-    while analysis_message_limit is None or analysis_message_limit > 0:
-        if analysis_message_limit is not None:
-            analysis_message_limit -= 1
-        elif "q" in input(
-            f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
-        ):
-            break
+            msg = conv.perform_next_step()
+            code_retry_limit = 3
+            while conv.last_msg_contains_execution_errors():
+                error_count += 1
+                print_message(msg, Colors.RED)
+                if code_retry_limit == 0:
+                    print("Exceeded code retry limit")
+                    raise CodeRetryLimitExceeded(
+                        f"Code assistant exceeded retry limit for code execution and could not fix the code for 3 consecutive times."
+                    )
+                msg = conv.fix_last_code_message()
+                code_retry_limit -= 1
 
-        msg = conv.perform_next_step()
-        code_retry_limit = 3
-        while conv.last_msg_contains_execution_errors():
-            error_count += 1
-            print_message(msg, Colors.RED)
-            if code_retry_limit == 0:
-                raise CodeRetryLimitExceeded()
-            msg = conv.fix_last_code_message()
+            print_message(
+                msg,
+                Colors.PURPLE
+                if msg.role == ConversationRolesInternalEnum.CODE
+                else Colors.BLUE,
+            )
+    except Exception as e:
+        try:
+            report_path = runtime.generate_report("reports", report_name)
+        except Exception as ex:
+            report_path = None
 
-        print_message(
-            msg,
-            Colors.PURPLE
-            if msg.role == ConversationRolesInternalEnum.CODE
-            else Colors.BLUE,
-        )
+        raise e
 
-    report_path = runtime.generate_report(
-        "reports", datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    )
+    report_path = runtime.generate_report("reports", report_name)
 
     print(
         f"{Colors.BOLD_RED.value}Total number of errors: {error_count}{Colors.END.value}"
     )
     print(
         f"{Colors.BOLD_YELLOW.value}Report has been saved to {report_path}{Colors.END.value}"
+    )
+    print(
+        f"{Colors.BOLD_BLUE.value}Code Assistant messages missing code snippets: {conv.code_messages_missing_snippets}{Colors.END.value}"
     )
 
     conv_json = conv.get_conversation_json()

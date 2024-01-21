@@ -71,6 +71,7 @@ if (
     )
     and st.button("Analyze")
 ):
+    output_pdf_path = f"reports/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.pdf"
     try:
         # TODO: Save the uploaded file to a temporary location
 
@@ -100,9 +101,9 @@ if (
                 analysis_assistants[analysis_assistant],
                 prompting_techniques[prompting_technique],
                 analysis_message_limit=analysis_message_limit,
+                output_pdf_path=output_pdf_path,
                 **kwargs,
             )
-
             # TODO open ai api key; steps of analysis (api calls)
 
             st.success("Analysis Generated!")
@@ -124,6 +125,18 @@ if (
 
     except Exception as e:
         st.error("An error occurred while analyzing the data: " + str(e))
+        if os.path.exists(output_pdf_path):
+            with open(output_pdf_path, "rb") as file:
+                file_content = file.read()
+                btn = st.download_button(
+                    label="Download PDF",
+                    data=file_content,
+                    file_name=f"downloaded_file{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.pdf",
+                    mime="application/octet-stream",
+                )
+                images = convert_from_bytes(file_content)
+                for image in images:
+                    st.image(image, use_column_width=True)
         traceback.print_exc()
 
     finally:
