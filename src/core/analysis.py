@@ -81,8 +81,11 @@ def analyze(
                 print_message(msg, Colors.RED)
                 if code_retry_limit == 0:
                     print("Exceeded code retry limit")
-                    raise CodeRetryLimitExceeded()
+                    raise CodeRetryLimitExceeded(
+                        f"Code assistant exceeded retry limit for code execution and could not fix the code for 3 consecutive times."
+                    )
                 msg = conv.fix_last_code_message()
+                code_retry_limit -= 1
 
             print_message(
                 msg,
@@ -95,6 +98,7 @@ def analyze(
             report_path = runtime.generate_report("reports", report_name)
         except Exception as ex:
             report_path = None
+
         raise e
 
     report_path = runtime.generate_report("reports", report_name)
@@ -104,6 +108,9 @@ def analyze(
     )
     print(
         f"{Colors.BOLD_YELLOW.value}Report has been saved to {report_path}{Colors.END.value}"
+    )
+    print(
+        f"{Colors.BOLD_BLUE.value}Code Assistant messages missing code snippets: {conv.code_messages_missing_snippets}{Colors.END.value}"
     )
 
     conv_json = conv.get_conversation_json()

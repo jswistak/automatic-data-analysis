@@ -24,6 +24,7 @@ class Conversation:
         self._code_assistant: IAssistant = code_assistant
         self._analysis_assistant: IAssistant = analysis_assistant
         self._prompt: IPromptManager = prompt
+        self.code_messages_missing_snippets: int = 0
 
     @staticmethod
     def format_code_assistant_message(message: str, code_output: str) -> str:
@@ -88,13 +89,20 @@ class Conversation:
         code_snippets = self._extract_code_snippets_from_message(code_response)
         output = []
         first_snippet_idx = -1
-
+        if len(code_snippets) == 0:
+            self.code_messages_missing_snippets += 1
         for code_snippet in code_snippets:
             if not code_snippet.startswith("python"):
                 continue  # Skip code snippets that are not in python
 
             code = code_snippet[6:]  # Remove 'python' from the code snippet
-            cell_idx = self._execute_python_snippet(code)
+            try:
+                cell_idx = self._execute_python_snippet(code)
+            except Exception as e:
+                print("Error executing code snippet:\n")
+                print(code)
+                raise e
+
             if first_snippet_idx == -1:
                 first_snippet_idx = cell_idx
 
