@@ -25,9 +25,8 @@ report_params_no = {
     "few-shot_mixtral-8x7b": 6,
 }
 
-dataset_path = "data/castles.csv"
+dataset_path = "data/<dataset>.csv"
 dataset_name = dataset_path.split("/")[-1].split(".")[0]
-
 
 for assistant in assistants:
     for prompting_technique in prompting_techniques:
@@ -57,7 +56,6 @@ for assistant in assistants:
             )
         except CodeRetryLimitExceeded as e:
             print(e)
-            continue
         print(output_pdf_path)
         print("Error Count:", error_count)
         print("Code Messages Missing Snippets:", code_messages_missing_snippets)
