@@ -16,7 +16,7 @@ load_dotenv()
 st.title("Automated Tabular Data analysis")
 
 # Define your options for the prompting technique here
-prompting_techniques = {"Zero Shot": "zero-shot"}
+prompting_techniques = {"Zero Shot": "zero-shot", "Few Shot": "few-shot"}
 
 prompting_technique = st.selectbox(
     "Select Prompting Technique", prompting_techniques.keys()
