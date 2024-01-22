@@ -26,6 +26,7 @@ def get_together_text(output: dict) -> str:
     try:
         return output["output"]["choices"][0]["text"]
     except KeyError:
+        print(output)
         raise ValueError("Invalid response or text not found")
 
 
