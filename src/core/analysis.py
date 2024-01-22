@@ -40,7 +40,8 @@ def analyze(
         report_name = output_pdf_path.split("/")[-1].split(".")[0]
     except:
         report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-
+    if report_name == "":
+        report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     load_dataset_code = "\n".join(
         ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
     )
