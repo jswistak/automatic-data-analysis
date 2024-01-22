@@ -28,7 +28,7 @@ def analyze(
     prompt: IPromptManager,
     analysis_message_limit: Union[int, None] = None,
     output_pdf_path: str = None,
-) -> str:
+) -> tuple[str, int, int]:
     """
     Conduct the automated tabular data analysis using LLM for a given dataset.
     Returns the path to the generated report.
@@ -121,4 +121,4 @@ def analyze(
     print(
         f"{Colors.BOLD_YELLOW.value}Conversation has been saved to {conv_path}{Colors.END.value}"
     )
-    return report_path
+    return report_path, error_count, conv.code_messages_missing_snippets

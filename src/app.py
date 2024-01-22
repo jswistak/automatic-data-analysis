@@ -93,7 +93,7 @@ if (
             kwargs["code_assistant_kwargs"]["api_key"] = (
                 openai_token if code_assistant == "OpenAI" else together_token
             )
-            output_pdf_path = main(
+            output_pdf_path, error_count, code_messages_missing_snippets = main(
                 dataset_name,
                 dataset_path,
                 runtime,
