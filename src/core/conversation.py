@@ -89,12 +89,11 @@ class Conversation:
         code_snippets = self._extract_code_snippets_from_message(code_response)
         output = []
         first_snippet_idx = -1
-        if len(code_snippets) == 0:
-            self.code_messages_missing_snippets += 1
+        containsPythonSnippet = False
         for code_snippet in code_snippets:
             if not code_snippet.startswith("python"):
                 continue  # Skip code snippets that are not in python
-
+            containsPythonSnippet = True
             code = code_snippet[6:]  # Remove 'python' from the code snippet
             try:
                 cell_idx = self._execute_python_snippet(code)
@@ -123,6 +122,8 @@ class Conversation:
 
             if self._runtime.check_if_plot_in_output(cell_idx):
                 output[-1] += "\n\nPlot was generated successfully."
+        if not containsPythonSnippet:
+            self.code_messages_missing_snippets += 1
 
         if len(output) > 0:
             code_response = self.format_code_assistant_message(
