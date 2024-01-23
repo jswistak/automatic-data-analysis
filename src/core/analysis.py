@@ -28,7 +28,7 @@ def analyze(
     prompt: IPromptManager,
     analysis_message_limit: Union[int, None] = None,
     output_pdf_path: str = None,
-) -> str:
+) -> tuple[str, int, int]:
     """
     Conduct the automated tabular data analysis using LLM for a given dataset.
     Returns the path to the generated report.
@@ -40,7 +40,8 @@ def analyze(
         report_name = output_pdf_path.split("/")[-1].split(".")[0]
     except:
         report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-
+    if report_name == "":
+        report_name = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     load_dataset_code = "\n".join(
         ["import pandas as pd", f"df= pd.read_csv('{dataset_file_name}', sep=',')"]
     )
@@ -120,4 +121,4 @@ def analyze(
     print(
         f"{Colors.BOLD_YELLOW.value}Conversation has been saved to {conv_path}{Colors.END.value}"
     )
-    return report_path
+    return report_path, error_count, conv.code_messages_missing_snippets

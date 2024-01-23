@@ -49,7 +49,7 @@ else:
     together_token = None
 
 analysis_message_limit = st.number_input(
-    "Analysis Message Limit", min_value=3, max_value=40, value=3
+    "Analysis Message Limit", min_value=3, max_value=15, value=5
 )
 
 uploaded_file = st.file_uploader("Upload CSV", type="csv")
@@ -93,7 +93,7 @@ if (
             kwargs["code_assistant_kwargs"]["api_key"] = (
                 openai_token if code_assistant == "OpenAI" else together_token
             )
-            output_pdf_path = main(
+            output_pdf_path, error_count, code_messages_missing_snippets = main(
                 dataset_name,
                 dataset_path,
                 runtime,

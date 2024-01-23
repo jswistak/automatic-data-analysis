@@ -21,6 +21,7 @@ def _get_response(response: ChatCompletion) -> str:
     Get text response from the OpenAI API response.
     """
     if not response.choices or not response.choices[0].message.content:
+        print(response)
         raise ValueError("Invalid response or text not found")
     return response.choices[0].message.content
 

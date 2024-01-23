@@ -79,7 +79,7 @@ def main(
     analysis_message_limit: Union[int, None] = None,
     output_pdf_path: str = "",
     **kwargs,
-) -> str:
+) -> tuple[str, int, int]:
     """
     Program running the automated tabular data analysis using LLM.
     Returns the output of the analysis.
