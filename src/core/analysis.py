@@ -66,16 +66,17 @@ def analyze(
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
     error_count = 0
+    msg_count = 0
     try:
-        while analysis_message_limit is None or analysis_message_limit > 0:
-            if analysis_message_limit is not None:
-                analysis_message_limit -= 1
-            elif "q" in input(
+        while analysis_message_limit is None or msg_count < analysis_message_limit:
+            
+            if analysis_message_limit is None and "q" in input(
                 f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
             ):
                 break
 
             msg = conv.perform_next_step()
+            msg_count += 1
             code_retry_limit = 3
             while conv.last_msg_contains_execution_errors():
                 error_count += 1
@@ -101,6 +102,11 @@ def analyze(
             report_path = None
 
         raise e
+    finally:
+        analyst_count = (msg_count + 1) // 2
+        code_count = msg_count // 2 + error_count
+        analyst_count + code_count # measurement 4 - total number of requests to assistants
+        msg_count # measurement 3 - progress of analysis
 
     report_path = runtime.generate_report("reports", report_name)
 
