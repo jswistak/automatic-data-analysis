@@ -68,7 +68,10 @@ for iteration in range(1, ITERATIONS):
             print("Error Count:", error_count)
             print("Code Messages Missing Snippets:", code_messages_missing_snippets)
             # create text file with error count and code messages missing snippets
-            with open(f"data/{dataset_name}_{report_no}.txt", "w") as f:
+            with open(
+                f"data/{dataset_name}_{report_no}_{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.txt",
+                "w",
+            ) as f:
                 f.write(f"Error Count: {error_count}\n")
                 f.write(
                     f"Code Messages Missing Snippets: {code_messages_missing_snippets}\n"
