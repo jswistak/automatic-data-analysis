@@ -54,8 +54,9 @@ for assistant in assistants:
                 output_pdf_path=f"../{dataset_name}_{report_no}.pdf",
                 **kwargs,
             )
-        except CodeRetryLimitExceeded as e:
+        except Exception as e:
             print(e)
+            continue
         print(output_pdf_path)
         print("Error Count:", error_count)
         print("Code Messages Missing Snippets:", code_messages_missing_snippets)
