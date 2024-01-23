@@ -54,6 +54,7 @@ class NotebookRuntime(IRuntime):
         self._ws = create_connection(
             ws_url,
             header={"Authorization": f"token {token}"},
+            timeout=10.0,
         )
 
     def __del__(self):

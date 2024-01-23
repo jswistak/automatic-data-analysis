@@ -33,7 +33,7 @@ def save_to_csv(data):
 
     # Open the file in append mode ('a'). If the file doesn't exist, it will be created.
     with open(filename, "a", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, delimiter=";")
         if not file_exists:
             # If file does not exist, write the header
             writer.writerow(
@@ -46,6 +46,7 @@ def save_to_csv(data):
                     "code_messages_missing_snippets",
                     "msg_count",
                     "analysis_message_limit",
+                    "exception",
                 ]
             )
             # Rest can be calculated from these formulas:
@@ -145,6 +146,7 @@ def analyze(
                 conv.code_messages_missing_snippets,
                 msg_count,
                 analysis_message_limit,
+                e,
             ]
         )
 
@@ -171,6 +173,7 @@ def analyze(
             conv.code_messages_missing_snippets,
             msg_count,
             analysis_message_limit,
+            None,
         ]
     )
 
