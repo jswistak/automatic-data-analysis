@@ -21,7 +21,10 @@ class CodeRetryLimitExceeded(Exception):
         super().__init__(self.message)
 
 
-def save_to_csv(data):
+def save_to_csv(data: list) -> None:
+    """
+    Save the results of the analysis to a CSV file.
+    """
     filename = "results.csv"
     # Check if file exists
     file_exists = False
