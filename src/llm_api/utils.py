@@ -9,6 +9,20 @@ def generate_together_completion(
     top_k: int = 50,
     top_p: float = 0.7,
 ) -> dict:
+    """
+    Generate a completion using the Together API.
+
+    Parameters:
+    - prompt (str): The prompt to generate the completion from.
+    - model (str): The model to use for the completion.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - temperature (float): The temperature parameter for the LLM.
+    - top_k (int): The top-k parameter for the LLM.
+    - top_p (float): The top-p parameter for the LLM.
+
+    Returns:
+    dict: The generated completion from the LLM.
+    """
     output = together.Complete.create(
         prompt=prompt,
         model=model,
@@ -23,6 +37,7 @@ def generate_together_completion(
 
 
 def get_together_text(output: dict) -> str:
+    """Get text response from the Together API response."""
     try:
         return output["output"]["choices"][0]["text"]
     except KeyError:
@@ -31,6 +46,7 @@ def get_together_text(output: dict) -> str:
 
 
 def conversation_prompt_to_instruct(conversation: list) -> str:
+    """Convert a conversation prompt to an instruct prompt."""
     prompt = ""
     for number in range(len(conversation)):
         if conversation[number].role == "system":

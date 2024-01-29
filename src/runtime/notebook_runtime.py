@@ -54,6 +54,7 @@ class NotebookRuntime(IRuntime):
         self._ws = create_connection(
             ws_url,
             header={"Authorization": f"token {token}"},
+            timeout=10.0,
         )
 
     def __del__(self):
@@ -61,29 +62,36 @@ class NotebookRuntime(IRuntime):
         self._ws.close()
 
     def set_report_title(self, title: str) -> None:
+        """Sets the title of the report."""
         self._notebook.metadata["title"] = title
 
     def add_description(self, description: str) -> int:
+        """Adds a cell with the description of the process."""
         self._notebook.cells.append(nbformat.v4.new_markdown_cell(description))
         return len(self._notebook.cells) - 1
 
     def add_code(self, code: str) -> int:
+        """Adds a cell with the code."""
         self._notebook.cells.append(nbformat.v4.new_code_cell(code))
         return len(self._notebook.cells) - 1
 
     def remove_cell(self, cell_index: int = -1) -> None:
+        """Removes the cell with the given index."""
         del self._notebook.cells[cell_index]
 
     def execute_cell(self, cell_index: int = -1) -> None:
+        """Executes a cell with the given index, if it is a code cell. Otherwise, does nothing."""
         if self._notebook.cells[cell_index].cell_type == "code":
             self._notebook.cells[cell_index] = self._execute_cell(
                 self._notebook.cells[cell_index]
             )
 
     def get_content(self, cell_index: int = -1) -> str:
+        """Returns the content of the cell with the given index."""
         return self._notebook.cells[cell_index].source
 
     def get_cell_output_stream(self, cell_index: int = -1) -> Union[str, None]:
+        """Returns the output (only stdout and stderr, no media) of the cell with the given index, if it is a code cell. Otherwise, returns None."""
         cell = self._notebook.cells[cell_index]
         if cell.cell_type != "code":
             return None
@@ -106,6 +114,7 @@ class NotebookRuntime(IRuntime):
         return out_stream
 
     def check_if_plot_in_output(self, cell_index: int = -1) -> bool:
+        """Checks if the cell with the given index contains a plot."""
         cell = self._notebook.cells[cell_index]
         if cell.cell_type != "code":
             return False
@@ -115,6 +124,7 @@ class NotebookRuntime(IRuntime):
                 return True
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
+        """Uploads a file to the Jupyter Server."""
         if not os.path.exists(local_path):
             raise FileNotFoundError("File does not exist")
 
@@ -134,6 +144,16 @@ class NotebookRuntime(IRuntime):
         response.raise_for_status()
 
     def generate_report(self, dest_dir: str, filename: str) -> str:
+        """
+        Generate a PDF report from the notebook and save it to the specified directory.
+
+        Args:
+            dest_dir (str): The destination directory where the PDF report will be saved.
+            filename (str): The name of the PDF report file.
+
+        Returns:
+            str: The path to the generated PDF report file.
+        """
         exporter = nbconvert.PDFExporter()
         body, resources = exporter.from_notebook_node(self._notebook)
 

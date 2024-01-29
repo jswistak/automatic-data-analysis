@@ -30,6 +30,18 @@ class SSHPythonRuntime(IRuntime):
     def __init__(
         self, username: str, password: str, host: str = "127.0.0.1", port: int = 22
     ):
+        """
+        Initializes the SSHPythonRuntime object.
+
+        Args:
+            username (str): The username for SSH connection.
+            password (str): The password for SSH connection.
+            host (str, optional): The host IP address. Defaults to "127.0.0.1".
+            port (int, optional): The SSH port number. Defaults to 22.
+
+        Returns:
+            None
+        """
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._ssh.connect(
@@ -43,17 +55,49 @@ class SSHPythonRuntime(IRuntime):
         self._cells: list[_SSHPythonRuntimeCell] = []
 
     def __del__(self):
+        """
+        Closes the SSH connection and the shell when the object is destroyed.
+        """
         self._shell.close()
         self._ssh.close()
 
     def set_report_title(self, title: str) -> None:
-        self._cells.insert(0, _SSHPythonRuntimeCell("content", title + "\n============="))
+        """
+        Sets the title of the report.
+
+        Args:
+            title (str): The title of the report.
+
+        Returns:
+            None
+        """
+        self._cells.insert(
+            0, _SSHPythonRuntimeCell("content", title + "\n=============")
+        )
 
     def add_description(self, description: str) -> int:
+        """
+        Adds a description to the SSH Python runtime.
+
+        Args:
+            description (str): The description to be added.
+
+        Returns:
+            int: The index of the added description in the runtime's cells.
+        """
         self._cells.append(_SSHPythonRuntimeCell(description, "description"))
         return len(self._cells) - 1
 
     def add_code(self, code: str) -> int:
+        """
+        Adds code to the SSH Python runtime.
+
+        Args:
+            code (str): The code to be added.
+
+        Returns:
+            int: The index of the added code in the runtime's cells.
+        """
         # Replace complex path to simple one
         matches = re.findall(self._saveplot__path_regex, code)
         for match in matches:
@@ -66,9 +110,27 @@ class SSHPythonRuntime(IRuntime):
         return len(self._cells) - 1
 
     def remove_cell(self, cell_index: int = -1) -> None:
+        """
+        Removes a cell from the SSH Python runtime.
+
+        Args:
+            cell_index (int, optional): The index of the cell to be removed. Defaults to -1.
+
+        Returns:
+            None
+        """
         del self._cells[cell_index]
 
     def execute_cell(self, cell_index: int = -1) -> None:
+        """
+        Executes a cell in the SSH Python runtime.
+
+        Args:
+            cell_index (int, optional): The index of the cell to be executed. Defaults to -1.
+
+        Returns:
+            None
+        """
         cell = self._cells[cell_index]
         if cell.type != "code":
             return
@@ -88,9 +150,27 @@ class SSHPythonRuntime(IRuntime):
         self._cells[cell_index].plots = out_plots
 
     def get_content(self, cell_index: int = -1) -> str:
+        """
+        Gets the content of a cell in the SSH Python runtime.
+
+        Args:
+            cell_index (int, optional): The index of the cell. Defaults to -1.
+
+        Returns:
+            str: The content of the cell.
+        """
         return self._cells[cell_index].content
 
     def get_cell_output_stream(self, cell_index: int = -1) -> Union[str, None]:
+        """
+        Gets the output stream of a cell in the SSH Python runtime.
+
+        Args:
+            cell_index (int, optional): The index of the cell. Defaults to -1.
+
+        Returns:
+            Union[str, None]: The output stream of the cell, or None if the cell is not a code cell.
+        """
         cell = self._cells[cell_index]
         if cell.type != "code":
             return None
@@ -98,9 +178,28 @@ class SSHPythonRuntime(IRuntime):
         return cell.output
 
     def check_if_plot_in_output(self, cell_index: int = -1) -> bool:
+        """
+        Checks if a plot is included in the output of a cell in the SSH Python runtime.
+
+        Args:
+            cell_index (int, optional): The index of the cell. Defaults to -1.
+
+        Returns:
+            bool: True if a plot is included in the output, False otherwise.
+        """
         return self._cells[cell_index].plots != []
 
     def upload_file(self, local_path: str, dest_file_path: str) -> None:
+        """
+        Uploads a file from the local machine to the SSH Python runtime.
+
+        Args:
+            local_path (str): The local path of the file to be uploaded.
+            dest_file_path (str): The destination path of the file in the SSH Python runtime.
+
+        Returns:
+            None
+        """
         if not os.path.exists(local_path):
             raise FileNotFoundError("File does not exist")
 
@@ -109,6 +208,16 @@ class SSHPythonRuntime(IRuntime):
         sftp_client.close()
 
     def generate_report(self, dest_dir: str, filename: str) -> str:
+        """
+        Generates a report with code snippets and their outputs.
+
+        Args:
+            dest_dir (str): The destination directory for the report.
+            filename (str): The filename of the report.
+
+        Returns:
+            str: The path of the generated markdown report.
+        """
         markdown = ""
 
         for i, cell in enumerate(self._cells):
@@ -130,20 +239,31 @@ class SSHPythonRuntime(IRuntime):
         return markdown_path
 
     def _download_file(self, remote_path: str, local_path: str) -> None:
-        """Download file from remote path to local path."""
+        """
+        Downloads a file from the SSH Python runtime to the local machine.
+
+        Args:
+            remote_path (str): The remote path of the file in the SSH Python runtime.
+            local_path (str): The local path of the file to be downloaded.
+
+        Returns:
+            None
+        """
         sftp_client = self._ssh.open_sftp()
         sftp_client.get(remote_path, local_path)
         sftp_client.close()
 
     def _execute_command(self, command: str) -> Tuple[str, List[str]]:
         """
-        Execute the given command in the remote shell.
+        Executes a command in the remote shell.
+
+        Args:
+            command (str): The command to be executed.
 
         Returns:
-            All output streams (both stdout and stderr) of the command.
-            If the command saves a plots, the filenames are returned as well.
+            Tuple[str, List[str]]: The output streams (stdout and stderr) of the command,
+            and the filenames of any saved plots.
         """
-
         command = command.strip("\n")
         self._shell.send(command + "\n")
 

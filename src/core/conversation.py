@@ -47,12 +47,17 @@ class Conversation:
     def _add_to_conversation(
         self, role: ConversationRolesInternalEnum, content: str
     ) -> None:
+        """Add message to the conversation."""
         self._conversation.append(Message(role=role, content=content))
 
     def _get_last_message(self) -> Message:
+        """Get the last message in the conversation."""
         return self._conversation[-1]
 
     def _send_message_analysis(self) -> None:
+        """
+        Generates output from the analysis assistant and adds it to the conversation history.
+        """
         analysis_conv = self._prompt.generate_conversation_context(
             self._conversation, ConversationRolesInternalEnum.ANALYSIS, LLMType.GPT4
         )
@@ -63,6 +68,7 @@ class Conversation:
         self._runtime.add_description(analysis_response)
 
     def _execute_python_snippet(self, code: str) -> int:
+        """Execute python code snippet in the runtime."""
         cell_idx = self._runtime.add_code(code)
         self._runtime.execute_cell(cell_idx)
         return cell_idx

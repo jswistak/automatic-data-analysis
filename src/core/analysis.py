@@ -1,4 +1,5 @@
 import json
+import csv
 from datetime import datetime
 from typing import Union
 
@@ -18,6 +19,45 @@ class CodeRetryLimitExceeded(Exception):
     def __init__(self, message="Exceeded code retry limit"):
         self.message = message
         super().__init__(self.message)
+
+
+def save_to_csv(data: list) -> None:
+    """
+    Save the results of the analysis to a CSV file.
+    """
+    filename = "results.csv"
+    # Check if file exists
+    file_exists = False
+    try:
+        with open(filename, "r") as f:
+            file_exists = True
+    except FileNotFoundError:
+        file_exists = False
+
+    # Open the file in append mode ('a'). If the file doesn't exist, it will be created.
+    with open(filename, "a", newline="") as f:
+        writer = csv.writer(f, delimiter=";")
+        if not file_exists:
+            # If file does not exist, write the header
+            writer.writerow(
+                [
+                    "code_assistant_type",
+                    "prompt_type",
+                    "dataset_name",
+                    "report_path",
+                    "error_count",
+                    "code_messages_missing_snippets",
+                    "msg_count",
+                    "analysis_message_limit",
+                    "exception",
+                ]
+            )
+            # Rest can be calculated from these formulas:
+            # analyst_count = (msg_count + 1) // 2
+            # code_count = msg_count // 2 + error_count
+            # total_assistant_requests = msg_count + error_count
+
+        writer.writerow(data)
 
 
 def analyze(
@@ -66,16 +106,16 @@ def analyze(
 
     conv = Conversation(runtime, code_assistant, analysis_assistant, prompt, conv_list)
     error_count = 0
+    msg_count = 0
     try:
-        while analysis_message_limit is None or analysis_message_limit > 0:
-            if analysis_message_limit is not None:
-                analysis_message_limit -= 1
-            elif "q" in input(
+        while analysis_message_limit is None or msg_count < analysis_message_limit:
+            if analysis_message_limit is None and "q" in input(
                 f"{Colors.BOLD_BLACK.value}Press 'q' to quit or any other key to continue: {Colors.END.value}"
             ):
                 break
 
             msg = conv.perform_next_step()
+            msg_count += 1
             code_retry_limit = 3
             while conv.last_msg_contains_execution_errors():
                 error_count += 1
@@ -99,6 +139,19 @@ def analyze(
             report_path = runtime.generate_report("reports", report_name)
         except Exception as ex:
             report_path = None
+        save_to_csv(
+            [
+                code_assistant.__class__.__name__,
+                prompt.__class__.__name__,
+                dataset_file_name,
+                report_path,
+                error_count,
+                conv.code_messages_missing_snippets,
+                msg_count,
+                analysis_message_limit,
+                e,
+            ]
+        )
 
         raise e
 
@@ -112,6 +165,19 @@ def analyze(
     )
     print(
         f"{Colors.BOLD_BLUE.value}Code Assistant messages missing code snippets: {conv.code_messages_missing_snippets}{Colors.END.value}"
+    )
+    save_to_csv(
+        [
+            code_assistant.__class__.__name__,
+            prompt.__class__.__name__,
+            dataset_file_name,
+            report_path,
+            error_count,
+            conv.code_messages_missing_snippets,
+            msg_count,
+            analysis_message_limit,
+            None,
+        ]
     )
 
     conv_json = conv.get_conversation_json()
